@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>yyy articles edit</title>
+        <meta name="description" content="page for editing articles">
+        <meta name="author" content="vijay rudraraju">
+
+        <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <!-- Le styles -->
+        <link href="static/css/bootstrap.css" rel="stylesheet">
+        <style type="text/css">
+            .container > footer p {
+                text-align: center; /* center align it with the container */
+            }
+
+            .topbar .btn {
+                border: 0;
+            }
+
+            #bannerImage {
+                width: 940px;
+                height: 100px;
+                margin: 0px auto; padding:0;
+            }
+        </style>
+        <!-- Le fav and touch icons -->
+        <link rel="shortcut icon" href="">
+        <link rel="apple-touch-icon" href="">
+        <link rel="apple-touch-icon" sizes="72x72" href="">
+        <link rel="apple-touch-icon" sizes="114x114" href="">
+
+        <script src="/_utils/script/json2.js"></script>
+        <script src="script/jquery.js"></script>
+        <script src="/_utils/script/jquery.couch.js"></script>
+        <script src="script/jquery.form.js"></script>
+        <script>
+            var articlesDoc = {};
+            var authorsDoc = {};
+            var bannersDoc = {};
+
+            function loadBanner(image) {
+                $('#bannerImage').css('background','url(/yesyesyes/banners/'+image+')');
+            }
+            function loadAuthors(authorsDoc) {
+                for (var i=0;i<authorsDoc.data.length;i++) {
+                    $('#author-select').append('<option>'+authorsDoc.data[i].name+'</option>');
+                }
+            }
+            function clearAuthors() {
+                $('#author-select').html('');
+            }
+            function updateGrid(articlesDoc) {
+                for (var i=articlesDoc.data.length-1;i>=0;i--) {
+                    $('#article-grid').append('<li><p>'+articlesDoc.data[i].title+' by '+articlesDoc.data[i].author+'</p></li>');
+                }
+            }
+            function clearGrid() {
+                $('#article-grid').html('');
+            }
+
+            $(function(){
+                $.couch.db('yesyesyes').openDoc('banners', {
+                    success: function(data) {
+                        console.log(data);
+                        bannersDoc = data;
+                        if (bannersDoc.data.length !== 0) {
+                            console.log('load banner');
+                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                        }
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+                $.couch.db('yesyesyes').openDoc('authors', {
+                    success: function(data) {
+                        console.log(data);
+                        authorsDoc = data;
+                        clearAuthors();
+                        loadAuthors(authorsDoc);
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+                $.couch.db('yesyesyes').openDoc('articles', {
+                    success: function(data) {
+                        console.log(data);
+                        articlesDoc = data;
+                        updateGrid(articlesDoc);
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+
+                $('#new-article-form').submit(function(e) {
+                    e.preventDefault(); 
+                    var data = {};
+                    var filename = "";
+
+                    $('#new-article-form :file').each(function() {
+                        data[this.name] = this.value;
+                        console.log('file value');
+                        console.log(this.value);
+                        var stringArray = this.value.split("\\");
+                        filename = stringArray[stringArray.length-1];
+                    });
+
+                    if ($('#new-article-form :text').val() === '') {
+                        alert('Please give a title to the article');
+                        return;
+                    }
+
+                    $('#new-article-form :hidden').val(articlesDoc._rev);
+
+                    articlesDoc.data.push({
+                        author:$('#author-select option:selected').text(),
+                        title:$('#new-article-form :text').val(),
+                        text:$('#new-article-form textarea').val()
+                    });
+                    $.couch.db('yesyesyes').saveDoc(articlesDoc,{
+                        success: function(data) {
+                            console.log(data);
+                            $('#new-article-form').clearForm();
+                            clearGrid();
+                            updateGrid(articlesDoc);
+                        },
+                        error: function(data) {
+                            console.log(data);
+                        }
+                    });
+
+                    return false
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="content">
+                <div class="page-header">
+                    <!--<h1>Page name <small>Supporting text or tagline</small></h1>-->
+                    <ul id="bannerImage">
+                    </ul>
+                </div>
+                <ul class="pills">
+                    <li><a href="banners.html">banners</a></li>
+                    <li><a href="authors.html">authors</a></li>
+                    <li class="active"><a href="articles.html">articles</a></li>
+                </ul>
+                <div class="page-header">
+                    <h2>articles</h2>
+                </div>
+                <div class="row">
+                    <div class="span8">
+                        <ul id="article-grid" class="media-grid">
+                        </ul>
+                    </div>
+                    <div class="span8 offset8">
+                        <form id="new-article-form" action="" method="post" class="pull-right">
+                            <fieldset>
+                                <legend>new article form</legend>
+                                <div class="clearfix">
+                                    <label for="name">new article title</label>
+                                    <div class="input">
+                                        <input class="input-small" type="text" placeholder="article title" name="name"/>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <label for="author-select">author of article</label>
+                                    <div class="input">
+                                        <select id="author-select" name="author">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <label for="textarea">new article</label>
+                                    <div class="input">
+                                        <textarea class="" name="textarea" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <div class="input">
+                                        <input type="submit" value="create new article"/>
+                                        <input type="hidden" name="_rev"/>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <footer>
+            <p>&copy; YesYesYes 2012</p>
+            <p>web stuff created by vijay rudraraju</p>
+            </footer>
+
+        </div> <!-- /container -->
+
+    </body>
+</html>
+

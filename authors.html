@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>yyy authors edit</title>
+        <meta name="description" content="page for editing authors">
+        <meta name="author" content="vijay rudraraju">
+
+        <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <!-- Le styles -->
+        <link href="static/css/bootstrap.css" rel="stylesheet">
+        <style type="text/css">
+            /* Override some defaults */
+            /*
+            html, body {
+            background-color: #eee;
+            }
+            */
+            /* 40px to make the container go all the way to the bottom of the topbar */
+            /*
+            body {
+            padding-top: 40px; 
+            }
+            */
+            .container > footer p {
+            text-align: center; /* center align it with the container */
+            }
+            /* downsize our container to make the content feel a bit tighter and more cohesive. NOTE: this removes two full columns from the grid, meaning you only go to 14 columns and not 16. */
+            /*
+            .container {
+            width: 820px; 
+            }
+            */
+
+            /* The white background content wrapper */
+            /*
+            .content {
+                background-color: #fff;
+                padding: 20px;
+                margin: 0 -20px; // negative indent the amount of the padding to maintain the grid system
+                -webkit-border-radius: 0 0 6px 6px;
+                -moz-border-radius: 0 0 6px 6px;
+                border-radius: 0 0 6px 6px;
+                -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+                -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+                box-shadow: 0 1px 2px rgba(0,0,0,.15);
+            }
+            */
+
+            /* Page header tweaks */
+            /*
+            .page-header {
+            background-color: #f5f5f5;
+            padding: 20px 20px 10px;
+            margin: -20px -20px 20px;
+            }
+            */
+
+            /* Styles you shouldn't keep as they are for displaying this base example only */
+            /*
+            .content .span10,
+            .content .span4 {
+                min-height: 500px;
+            }
+            */
+            /* Give a quick and non-cross-browser friendly divider */
+            /*
+            .content .span4 {
+                margin-left: 0;
+                padding-left: 19px;
+                border-left: 1px solid #eee;
+            }
+            */
+
+            .topbar .btn {
+                border: 0;
+            }
+
+            #bannerImage {
+                width: 940px;
+                height: 100px;
+                margin: 0px auto; padding:0;
+            }
+        </style>
+
+        <!-- Le fav and touch icons -->
+        <link rel="shortcut icon" href="images/favicon.ico">
+        <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+        <script src="/_utils/script/json2.js"></script>
+        <script src="script/jquery.js"></script>
+        <script src="/_utils/script/jquery.couch.js"></script>
+        <script src="script/jquery.form.js"></script>
+        <script>
+            function loadBanner(image) {
+                $('#bannerImage').css('background','url(/yesyesyes/banners/'+image+')');
+            }
+            function updateGrid(authorsDoc) {
+                for (var i=authorsDoc.data.length-1;i>=0;i--) {
+                    $('#authors-grid').append('<li><img class="thumbnail" src="/yesyesyes/authors/'+authorsDoc.data[i].logo+'" alt=""><h4>'+authorsDoc.data[i].name+'</h4></li>');
+                    //$('#authors-grid').append('<li><img class="thumbnail" src="/yesyesyes/authors/'+authorsDoc.data[i].logo+'" alt=""></li>');
+                }
+            }
+            function clearGrid() {
+                $('#authors-grid').html('');
+            }
+
+            var authorsDoc = {};
+            var bannersDoc = {};
+            $(function(){
+                $.couch.db('yesyesyes').openDoc('banners', {
+                    success: function(data) {
+                        console.log(data);
+                        bannersDoc = data;
+                        if (bannersDoc.data.length !== 0) {
+                            console.log('load banner');
+                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                        }
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+                $.couch.db('yesyesyes').openDoc('authors', {
+                    success: function(data) {
+                        console.log(data);
+                        authorsDoc = data;
+                        updateGrid(authorsDoc);
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+
+                $('#new-author-form').submit(function(e) {
+                    e.preventDefault(); 
+                    var data = {};
+                    var filename = "";
+
+                    $('#new-author-form :file').each(function() {
+                        data[this.name] = this.value;
+                        console.log('file value');
+                        console.log(this.value);
+                        var stringArray = this.value.split("\\");
+                        filename = stringArray[stringArray.length-1];
+                    });
+
+                    if (!data._attachments || data._attachments.length == 0) {
+                        alert('Please select a logo from your computer for the author');
+                        return;
+                    }
+
+                    if ($('#new-author-form :text').val() === '') {
+                        alert('Please give a name to the author');
+                        return;
+                    }
+
+                    for (var i=0;i<authorsDoc.data.length;i++) {
+                        if ($('#new-author-form :text').val() === authorsDoc.data[i].name) {
+                            alert('That name already belongs to another author');
+                            return;
+                        }
+                    }
+
+                    for (var i=0;i<authorsDoc.data.length;i++) {
+                        if (filename === authorsDoc.data[i].logo) {
+                            alert('A file with that name is being used as a logo for another author, please chose another logo or rename the file');
+                            return;
+                        }
+                    }
+
+                    $('#new-author-form :hidden').val(authorsDoc._rev);
+
+                    $(this).ajaxSubmit({
+                        url: '/yesyesyes/authors',
+                        type: 'post',
+                        dataType: 'json',
+                        success: function(data) {
+                            console.log('image upload success!');
+                            console.log(data);
+                            $.couch.db('yesyesyes').openDoc('authors', {
+                                success: function(data) {
+                                    console.log(data);
+                                    authorsDoc = data;
+                                    authorsDoc.data.push({
+                                        name:$('#new-author-form :text').val(),
+                                        logo:filename,
+                                        articles:[]
+                                    });
+                                    $.couch.db('yesyesyes').saveDoc(authorsDoc,{
+                                        success: function(data) {
+                                            console.log(data);
+                                            $('#new-author-form').clearForm();
+                                            clearGrid();
+                                            updateGrid(authorsDoc);
+                                        },
+                                        error: function(data) {
+                                            console.log(data);
+                                        }
+                                    });
+                                },
+                                error: function(data) {
+                                    console.log(data);
+                                }
+                            });
+                        },
+                        error: function(data) {
+                            console.log('image upload error!');
+                        }
+                    });
+
+                    return false
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="content">
+                <div class="page-header">
+                    <ul id="bannerImage">
+                    </ul>
+                </div>
+                <ul class="pills">
+                    <li class=""><a href="banners.html">banners</a></li>
+                    <li class="active"><a href="authors.html">authors</a></li>
+                    <li><a href="articles.html">articles</a></li>
+                </ul>
+                <div class="page-header">
+                    <h2>authors</h2>
+                </div>
+                <div class="row">
+                    <div class="span8">
+                        <ul id="authors-grid" class="media-grid pull-right">
+                        </ul>
+                    </div>
+                    <div class="span8">
+                        <form id="new-author-form" action="" method="post" class="pull-right">
+                            <fieldset>
+                                <legend>new author form</legend>
+                                <div class="clearfix">
+                                    <label for="name">new author name</label>
+                                    <div class="input">
+                                        <input class="input-small" type="text" placeholder="author name" name="name"/>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <label for="_attachments">new logo</label>
+                                    <div class="input">
+                                        <input type="file" id="image-select" name="_attachments"/>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <div class="input">
+                                        <input type="submit" value="create new author"/>
+                                        <input type="hidden" name="_rev"/>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <footer>
+            <p>&copy; yesyesyes 2012</p>
+            <p>web stuff created by vijay rudraraju</p>
+            </footer>
+
+        </div> <!-- /container -->
+
+    </body>
+</html>

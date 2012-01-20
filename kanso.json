@@ -1,0 +1,9 @@
+{
+    "name": "yyyeditor",
+    "version": "0.0.1",
+    "description": "editor interface for yyy",
+    "attachments": ["banners.html","authors.html","articles.html","script","static"],
+    "dependencies": {
+        "attachments": null
+    }
+}

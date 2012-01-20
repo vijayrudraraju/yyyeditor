@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>YYYEditor</title>
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <!-- Le styles -->
+        <link href="static/css/bootstrap.css" rel="stylesheet">
+        <style type="text/css">
+            /* Override some defaults */
+            /*
+            html, body {
+            background-color: #eee;
+            }
+            */
+            /* 40px to make the container go all the way to the bottom of the topbar */
+            /*
+            body {
+            padding-top: 40px; 
+            }
+            */
+            .container > footer p {
+            text-align: center; /* center align it with the container */
+            }
+            /* downsize our container to make the content feel a bit tighter and more cohesive. NOTE: this removes two full columns from the grid, meaning you only go to 14 columns and not 16. */
+            /*
+            .container {
+            width: 820px; 
+            }
+            */
+
+            /* The white background content wrapper */
+            /*
+            .content {
+                background-color: #fff;
+                padding: 20px;
+                margin: 0 -20px; // negative indent the amount of the padding to maintain the grid system
+                -webkit-border-radius: 0 0 6px 6px;
+                -moz-border-radius: 0 0 6px 6px;
+                border-radius: 0 0 6px 6px;
+                -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+                -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+                box-shadow: 0 1px 2px rgba(0,0,0,.15);
+            }
+            */
+
+            /* Page header tweaks */
+            /*
+            .page-header {
+            background-color: #f5f5f5;
+            padding: 20px 20px 10px;
+            margin: -20px -20px 20px;
+            }
+            */
+
+            /* Styles you shouldn't keep as they are for displaying this base example only */
+            /*
+            .content .span10,
+            .content .span4 {
+                min-height: 500px;
+            }
+            */
+            /* Give a quick and non-cross-browser friendly divider */
+            /*
+            .content .span4 {
+                margin-left: 0;
+                padding-left: 19px;
+                border-left: 1px solid #eee;
+            }
+            */
+
+            .topbar .btn {
+                border: 0;
+            }
+
+            #bannerImage {
+                width: 940px;
+                height: 100px;
+                margin: 0px auto; padding:0;
+                background: url(/yesyesyes/banners/puppy-dog.jpg);
+            }
+        </style>
+
+        <!-- Le fav and touch icons -->
+        <link rel="shortcut icon" href="images/favicon.ico">
+        <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+        <script src="/_utils/script/json2.js"></script>
+        <script src="script/jquery.js"></script>
+        <script src="/_utils/script/jquery.couch.js"></script>
+        <script src="script/jquery.form.js"></script>
+        <script>
+            function updateGrid(creatorsDoc) {
+                for (var i=0;i<creatorsDoc.data.length;i++) {
+                    $('#article-grid').append('<li><a href="#"><img class="thumbnail" src="/yesyesyes/creators/'+creatorsDoc.data[i].logo+'" alt=""></a></li>');
+                }
+            }
+            function clearGrid() {
+                $('#article-grid').html('');
+            }
+
+            $(function(){
+                var bannersDoc = {};
+                $.couch.db('yesyesyes').openDoc('banners', {
+                    success: function(data) {
+                        console.log(data);
+                        bannersDoc = data;
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+
+                var creatorsDoc = {};
+                $.couch.db('yesyesyes').openDoc('creators', {
+                    success: function(data) {
+                        console.log(data);
+                        creatorsDoc = data;
+                        updateGrid(creatorsDoc);
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+
+                $('#new-creator-form').submit(function(e) {
+                    e.preventDefault(); 
+                    var data = {};
+                    var filename = "";
+
+                    $('#new-creator-form :file').each(function() {
+                        data[this.name] = this.value;
+                        console.log('file value');
+                        console.log(this.value);
+                        var stringArray = this.value.split("\\");
+                        filename = stringArray[stringArray.length-1];
+                    });
+
+                    if (!data._attachments || data._attachments.length == 0) {
+                        alert('Please select a file to upload.');
+                        return;
+                    }
+
+                    $('#new-creator-form :hidden').val(creatorsDoc._rev);
+
+                    $(this).ajaxSubmit({
+                        url: '/yesyesyes/creators',
+                        type: 'post',
+                        dataType: 'json',
+                        success: function(data) {
+                            console.log('image upload success!');
+                            console.log(data);
+                            $.couch.db('yesyesyes').openDoc('creators', {
+                                success: function(data) {
+                                    console.log(data);
+                                    creatorsDoc = data;
+                                    creatorsDoc.data.push({
+                                        name:$('#new-creator-form :text').val(),
+                                        logo:filename
+                                    });
+                                    $.couch.db('yesyesyes').saveDoc(creatorsDoc,{
+                                        success: function(data) {
+                                            console.log(data);
+                                            $('#new-creator-form').clearForm();
+                                            clearGrid();
+                                            updateGrid(creatorsDoc);
+                                        },
+                                        error: function(data) {
+                                            console.log(data);
+                                        }
+                                    });
+                                },
+                                error: function(data) {
+                                    console.log(data);
+                                }
+                            });
+                        },
+                        error: function(data) {
+                            console.log('image upload error!');
+                        }
+                    });
+
+                    return false
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+        <!--<div class="topbar">
+            <div class="fill">
+                <div class="container">
+                    <a class="brand" href="#">YYYEditor</a>
+                    <ul class="nav">
+                        <li class="active"><a href="#">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                    <form action="" class="pull-right">
+                        <input class="input-small" type="text" placeholder="Username">
+                        <input class="input-small" type="password" placeholder="Password">
+                        <button class="btn" type="submit">Sign in</button>
+                    </form>
+                </div>
+            </div>
+        </div>-->
+
+        <div class="container">
+
+            <div class="content">
+                <div class="page-header">
+                    <!--<h1>Page name <small>Supporting text or tagline</small></h1>-->
+                    <ul id="bannerImage">
+                    </ul>
+                </div>
+                <ul class="pills">
+                    <li class="active"><a href="index.html">users</a></li>
+                    <li><a href="articles.html">articles</a></li>
+                </ul>
+                <div class="row">
+                    <div class="span10">
+                        <h2>articles</h2>
+                        <ul id="article-grid"class="media-grid">
+                        </ul>
+                    </div>
+                    <div class="span6">
+                        <form id="new-article-form" action="" method="post" class="pull-right">
+                            <fieldset>
+                                <legend>new article form</legend>
+                                <div class="clearfix">
+                                    <div class="input">
+                                        <select id="creator-select">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <div class="input">
+                                        <input type="submit" value="create new user"/>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                        <form id="new-creator-form" action="" method="post" class="pull-right">
+                            <fieldset>
+                                <legend>new creator form</legend>
+                                <div class="clearfix">
+                                    <div class="input">
+                                        <input class="input-small" type="text" placeholder="creator name" name="name"/>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <div class="input">
+                                        <input type="file" id="image-select" name="_attachments"/>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <div class="input">
+                                        <input type="submit" value="create new creator"/>
+                                        <input type="hidden" name="_rev"/>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+
+                        <!--<h3>Edit space</h3>-->
+                        <!--<form id="banner-upload" action="" method="post" class="pull-right">
+                            <input class="btn" type="file" id="files" name="_attachments"/>
+                            <output id="list"></output>
+                            <button class="btn" type="submit">Upload banner</button>
+                            <input type="hidden" name="_rev"/>
+                        </form>
+
+                        <form id="creator-upload" action="" method="post" class="pull-right">
+                            <input class="btn" type="file" id="files" name="_attachments"/>
+                            <output id="list"></output>
+                            <button class="btn" type="submit">Upload creator</button>
+                            <input type="hidden" name="_rev"/>
+                        </form>-->
+                    </div>
+                </div>
+            </div>
+
+            <footer>
+            <p>&copy; YesYesYes 2012</p>
+            </footer>
+
+        </div> <!-- /container -->
+
+    </body>
+</html>

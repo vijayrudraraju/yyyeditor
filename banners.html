@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>yyy banners edit</title>
+        <meta name="description" content="page for editing banners">
+        <meta name="banner" content="vijay rudraraju">
+
+        <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+        <!-- Le styles -->
+        <link href="static/css/bootstrap.css" rel="stylesheet">
+        <style type="text/css">
+            .container > footer p {
+            text-align: center; /* center align it with the container */
+            }
+
+            .topbar .btn {
+                border: 0;
+            }
+
+            #bannerImage {
+                width: 940px;
+                height: 100px;
+                margin: 0px auto; padding:0;
+            }
+        </style>
+
+        <!-- Le fav and touch icons -->
+        <link rel="shortcut icon" href="images/favicon.ico">
+        <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+        <script src="/_utils/script/json2.js"></script>
+        <script src="script/jquery.js"></script>
+        <script src="/_utils/script/jquery.couch.js"></script>
+        <script src="script/jquery.form.js"></script>
+        <script>
+            function loadBanner(image) {
+                $('#bannerImage').css('background','url(/yesyesyes/banners/'+image+')');
+            }
+            function updateGrid(bannersDoc) {
+                for (var i=bannersDoc.data.length-1;i>=0;i--) {
+                    $('#banners-grid').append('<li><img class="thumbnail" src="/yesyesyes/banners/'+bannersDoc.data[i].name+'" alt=""><h4>'+bannersDoc.data[i].name+'</h4></li>');
+                }
+            }
+            function clearGrid() {
+                $('#banners-grid').html('');
+            }
+
+
+            var bannersDoc = {};
+            $(function(){
+                $.couch.db('yesyesyes').openDoc('banners', {
+                    success: function(data) {
+                        console.log(data);
+                        bannersDoc = data;
+                        updateGrid(bannersDoc);
+                        if (bannersDoc.data.length !== 0) {
+                            console.log('load banner');
+                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                        }
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+
+                $('#new-banner-form').submit(function(e) {
+                    e.preventDefault(); 
+                    var data = {};
+                    var filename = "";
+
+                    $('#new-banner-form :file').each(function() {
+                        data[this.name] = this.value;
+                        console.log('file value');
+                        console.log(this.value);
+                        var stringArray = this.value.split("\\");
+                        filename = stringArray[stringArray.length-1];
+                    });
+
+                    if (!data._attachments || data._attachments.length == 0) {
+                        alert('Please select a logo from your computer for the author');
+                        return;
+                    }
+
+
+                    $('#new-banner-form :hidden').val(bannersDoc._rev);
+
+                    $(this).ajaxSubmit({
+                        url: '/yesyesyes/banners',
+                        type: 'post',
+                        dataType: 'json',
+                        success: function(data) {
+                            console.log('image upload success!');
+                            console.log(data);
+                            $.couch.db('yesyesyes').openDoc('banners', {
+                                success: function(data) {
+                                    console.log(data);
+                                    bannersDoc = data;
+                                    bannersDoc.data.push({
+                                        name:filename
+                                    });
+                                    $.couch.db('yesyesyes').saveDoc(bannersDoc,{
+                                        success: function(data) {
+                                            console.log(data);
+                                            $('#new-banner-form').clearForm();
+                                            clearGrid();
+                                            updateGrid(bannersDoc);
+                                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                                        },
+                                        error: function(data) {
+                                            console.log(data);
+                                        }
+                                    });
+                                },
+                                error: function(data) {
+                                    console.log(data);
+                                }
+                            });
+                        },
+                        error: function(data) {
+                            console.log('image upload error!');
+                        }
+                    });
+
+                    return false
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="content">
+                <div class="page-header">
+                    <ul id="bannerImage">
+                    </ul>
+                </div>
+                <ul class="pills">
+                    <li class="active"><a href="banners.html">banners</a></li>
+                    <li><a href="authors.html">authors</a></li>
+                    <li><a href="articles.html">articles</a></li>
+                </ul>
+                <div class="page-header">
+                    <h2>banners</h2>
+                </div>
+                <div class="row">
+                    <div class="span8">
+                        <ul id="banners-grid" class="media-grid">
+                        </ul>
+                    </div>
+                    <div class="span8">
+                        <form id="new-banner-form" action="" method="post" class="pull-right">
+                            <fieldset>
+                                <legend>new banner form</legend>
+                                <div class="clearfix">
+                                    <label for="_attachments">new banner</label>
+                                    <div class="input">
+                                        <input type="file" id="image-select" name="_attachments"/>
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <div class="input">
+                                        <input type="submit" value="create new banner"/>
+                                        <input type="hidden" name="_rev"/>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <footer>
+            <p>&copy; yesyesyes 2012</p>
+            <p>web stuff created by vijay rudraraju</p>
+            </footer>
+
+        </div> <!-- /container -->
+
+    </body>
+</html>
