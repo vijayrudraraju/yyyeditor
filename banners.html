@@ -27,6 +27,11 @@
                 height: 100px;
                 margin: 0px auto; padding:0;
             }
+
+            .thumbnail {
+                width: 90px;
+                height: 90px;
+            }
         </style>
 
         <!-- Le fav and touch icons -->
@@ -45,7 +50,7 @@
             }
             function updateGrid(bannersDoc) {
                 for (var i=bannersDoc.data.length-1;i>=0;i--) {
-                    $('#banners-grid').append('<li><img class="thumbnail" src="/yesyesyes/banners/'+bannersDoc.data[i].name+'" alt=""><h4>'+bannersDoc.data[i].name+'</h4></li>');
+                    $('#banners-grid').append('<li><a href="#"><img class="thumbnail" src="/yesyesyes/banners/'+bannersDoc.data[i].name+'" alt=""><h4>'+bannersDoc.data[i].name+'</h4></a></li>');
                 }
             }
             function clearGrid() {
@@ -155,7 +160,7 @@
                         </ul>
                     </div>
                     <div class="span8">
-                        <form id="new-banner-form" action="" method="post" class="pull-right">
+                        <form id="new-banner-form" action="" method="post" class="">
                             <fieldset>
                                 <legend>new banner form</legend>
                                 <div class="clearfix">

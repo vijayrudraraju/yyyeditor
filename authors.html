@@ -85,6 +85,11 @@
                 height: 100px;
                 margin: 0px auto; padding:0;
             }
+
+            .thumbnail {
+                width: 90px;
+                height: 90px;
+            }
         </style>
 
         <!-- Le fav and touch icons -->
@@ -103,7 +108,7 @@
             }
             function updateGrid(authorsDoc) {
                 for (var i=authorsDoc.data.length-1;i>=0;i--) {
-                    $('#authors-grid').append('<li><img class="thumbnail" src="/yesyesyes/authors/'+authorsDoc.data[i].logo+'" alt=""><h4>'+authorsDoc.data[i].name+'</h4></li>');
+                    $('#authors-grid').append('<li><a href="#"><img class="thumbnail" src="/yesyesyes/authors/'+authorsDoc.data[i].logo+'" alt=""><h4>'+authorsDoc.data[i].name+'</h4></a></li>');
                     //$('#authors-grid').append('<li><img class="thumbnail" src="/yesyesyes/authors/'+authorsDoc.data[i].logo+'" alt=""></li>');
                 }
             }
@@ -238,11 +243,11 @@
                 </div>
                 <div class="row">
                     <div class="span8">
-                        <ul id="authors-grid" class="media-grid pull-right">
+                        <ul id="authors-grid" class="media-grid">
                         </ul>
                     </div>
                     <div class="span8">
-                        <form id="new-author-form" action="" method="post" class="pull-right">
+                        <form id="new-author-form" action="" method="post" class="">
                             <fieldset>
                                 <legend>new author form</legend>
                                 <div class="clearfix">

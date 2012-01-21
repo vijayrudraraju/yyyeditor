@@ -27,6 +27,11 @@
                 height: 100px;
                 margin: 0px auto; padding:0;
             }
+
+            .thumbnail {
+                width: 90px;
+                height: 90px;
+            }
         </style>
         <!-- Le fav and touch icons -->
         <link rel="shortcut icon" href="">
@@ -56,7 +61,7 @@
             }
             function updateGrid(articlesDoc) {
                 for (var i=articlesDoc.data.length-1;i>=0;i--) {
-                    $('#article-grid').append('<li><p>'+articlesDoc.data[i].title+' by '+articlesDoc.data[i].author+'</p></li>');
+                    $('#article-grid').append('<li><a href="#"><p>'+articlesDoc.data[i].title+' by '+articlesDoc.data[i].author+'</p></a></li>');
                 }
             }
             function clearGrid() {
@@ -119,6 +124,21 @@
 
                     $('#new-article-form :hidden').val(articlesDoc._rev);
 
+                    for (var i=0;i<authorsDoc.data.length;i++) {
+                        if ($('#author-select option:selected').text() === authorsDoc.data[i].name) {
+                            authorsDoc.data[i].articles.push($('#new-article-form :text').val());
+                            break;
+                        }
+                    }
+                    $.couch.db('yesyesyes').saveDoc(authorsDoc,{
+                        success: function(data) {
+                            console.log(data);
+                        },
+                        error: function(data) {
+                            console.log(data);
+                        }
+                    });
+
                     articlesDoc.data.push({
                         author:$('#author-select option:selected').text(),
                         title:$('#new-article-form :text').val(),
@@ -163,8 +183,8 @@
                         <ul id="article-grid" class="media-grid">
                         </ul>
                     </div>
-                    <div class="span8 offset8">
-                        <form id="new-article-form" action="" method="post" class="pull-right">
+                    <div class="span8">
+                        <form id="new-article-form" action="" method="post" class="">
                             <fieldset>
                                 <legend>new article form</legend>
                                 <div class="clearfix">
@@ -189,6 +209,7 @@
                                 <div class="clearfix">
                                     <div class="input">
                                         <input type="submit" value="create new article"/>
+                                        <input type="hidden" name="_rev"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
