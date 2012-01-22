@@ -190,6 +190,10 @@
                             console.log('image upload success!');
                             console.log(data);
                             $.couch.db('yesyesyes').openDoc('authors', {
+                                beforeSend: function(data) {
+                                    console.log('before send');
+                                    console.log(data);
+                                },
                                 success: function(data) {
                                     console.log(data);
                                     authorsDoc = data;
