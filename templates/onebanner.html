@@ -12,7 +12,7 @@
         <![endif]-->
 
         <!-- Le styles -->
-        <link href="static/css/bootstrap.css" rel="stylesheet">
+        <link href="../../static/css/bootstrap.css" rel="stylesheet">
         <style type="text/css">
             .container > footer p {
                 text-align: center; /* center align it with the container */
@@ -35,34 +35,39 @@
         </style>
 
         <script src="/_utils/script/json2.js"></script>
-        <script src="script/jquery.js"></script>
+        <script src="../../script/jquery.js"></script>
         <script src="/_utils/script/jquery.couch.js"></script>
-        <script src="script/jquery.form.js"></script>
+        <script src="../../script/jquery.form.js"></script>
         <script>
             var dbName = 'yesyesyes';
+            var bannersDocName = 'banners';
 
-            function loadBanner(image) {
-                $('#bannerImage').css('background','url(/'+dbName+'/banners/'+image+')');
+            function loadBanner(docid) {
+                $.couch.db(dbName).openDoc(docid, {
+                    success: function(data) {
+                        console.log(data);
+                        $('#bannerImage').css('background','url(/'+dbName+'/'+data._id+'/'+data.logo+')');
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
             }
-            function updateGrid(bannersDoc) {
-                for (var i=bannersDoc.data.length-1;i>=0;i--) {
-                    $('#banners-grid').append('<li><a href="#"><img class="thumbnail" src="/'+dbName+'/banners/'+bannersDoc.data[i].name+'" alt=""><h4>'+bannersDoc.data[i].name+'</h4></a></li>');
-                }
-            }
-            function clearGrid() {
-                $('#banners-grid').html('');
+            function loadThisBanner() {
+
             }
 
             var bannersDoc = {};
             $(function(){
-                $.couch.db(dbName)openDoc('banners', {
+                var bannersDoc = {};
+
+                $.couch.db(dbName).openDoc(bannersDocName, {
                     success: function(data) {
                         console.log(data);
                         bannersDoc = data;
-                        updateGrid(bannersDoc);
                         if (bannersDoc.data.length !== 0) {
                             console.log('load banner');
-                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].docid);
                         }
                     },
                     error: function(data) {
@@ -80,37 +85,21 @@
                     <ul id="bannerImage">
                     </ul>
                 </div>
-                <ul class="pills">
-                    <li class="active"><a href="banners.html">banners</a></li>
-                    <li><a href="authors.html">authors</a></li>
-                    <li><a href="articles.html">articles</a></li>
+                <ul class="tabs">
+                    <li class="active"><a href="../../banners.html">banners</a></li>
+                    <li><a href="../../authors.html">authors</a></li>
+                    <li><a href="../../articles.html">articles</a></li>
                 </ul>
-                <div class="page-header">
-                    <h2>banners</h2>
-                </div>
+                <ul class="breadcrumb">
+                    <li><a href="../../banners.html">all</a> <span class="divider">/</span></li>
+                    <li class="active">{{logo}}</li>
+                </ul>
                 <div class="row">
                     <div class="span8">
                         <ul id="banners-grid" class="media-grid">
                         </ul>
                     </div>
                     <div class="span8">
-                        <form id="new-banner-form" action="" method="post" class="">
-                            <fieldset>
-                                <legend>new banner form</legend>
-                                <div class="clearfix">
-                                    <label for="_attachments">new banner</label>
-                                    <div class="input">
-                                        <input type="file" id="image-select" name="_attachments"/>
-                                    </div>
-                                </div>
-                                <div class="clearfix">
-                                    <div class="input">
-                                        <input type="submit" value="create new banner"/>
-                                        <input type="hidden" name="_rev"/>
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </form>
                     </div>
                 </div>
             </div>

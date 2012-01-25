@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <title>yyy banners edit</title>
         <meta name="description" content="page for editing banners">
-        <meta name="banner" content="vijay rudraraju">
+        <meta name="programmer" content="vijay rudraraju">
 
         <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
         <!--[if lt IE 9]>
@@ -34,12 +34,6 @@
             }
         </style>
 
-        <!-- Le fav and touch icons -->
-        <link rel="shortcut icon" href="images/favicon.ico">
-        <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
-
         <script src="/_utils/script/json2.js"></script>
         <script src="script/jquery.js"></script>
         <script src="/_utils/script/jquery.couch.js"></script>
@@ -48,23 +42,37 @@
             var dbName = 'yesyesyes';
             var bannersDocName = 'banners';
 
-            var bannersDoc = {};
-
-            function loadBanner(image) {
-                $('#bannerImage').css('background','url(/'+dbName+'/'+bannersDocName+'/'+image+')');
+            function loadBanner(docid) {
+                $.couch.db(dbName).openDoc(docid, {
+                    success: function(data) {
+                        console.log(data);
+                        $('#bannerImage').css('background','url(/'+dbName+'/'+data._id+'/'+data.logo+')');
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
             }
             function updateGrid(bannersDoc) {
-                /*
                 for (var i=bannersDoc.data.length-1;i>=0;i--) {
-                    $('#banners-grid').append('<li><a href="#"><img class="thumbnail" src="/'+dbName+'/'+bannersDocName+'/'+bannersDoc.data[i].name+'" alt=""><h4>'+bannersDoc.data[i].name+'</h4></a></li>');
+                    $.couch.db(dbName).openDoc(bannersDoc.data[i].docid, {
+                        success: function(data) {
+                            console.log(data);
+                            $('#banners-grid').append('<li><a href="_show/banner/'+data._id+'"><img class="thumbnail" src="/'+dbName+'/'+data._id+'/'+data.logo+'" alt=""><h4>'+data.logo+'</h4></a></li>');
+                        },
+                        error: function(data) {
+                            console.log(data);
+                        }
+                    });
                 }
-                */
             }
             function clearGrid() {
                 $('#banners-grid').html('');
             }
 
             $(function(){
+                var bannersDoc = {};
+
                 $.couch.db(dbName).openDoc(bannersDocName, {
                     success: function(data) {
                         console.log(data);
@@ -72,7 +80,7 @@
                         updateGrid(bannersDoc);
                         if (bannersDoc.data.length !== 0) {
                             console.log('load banner');
-                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].docid);
                         }
                     },
                     error: function(data) {
@@ -98,18 +106,22 @@
                         return;
                     }
 
+                    // get current time in milliseconds
                     var d = new Date();
+                    var time = d.getTime();
+
                     var newBanner = {
                         logo:filename,
-                        creationTime:d.getTime()
+                        creationtime:time
                     };
                     var bannerResp = {};
                     $.couch.db(dbName).saveDoc(newBanner,{
                         success: function(data) {
-                            console.log('new banner created');
+                            console.log('new banner doc created');
                             console.log(data);
                             bannerResp = data;
 
+                            // add rev number to form
                             $('#new-banner-form :hidden').val(bannerResp.rev);
 
                             // submit new banner form
@@ -118,17 +130,20 @@
                                 type: 'post',
                                 dataType: 'json',
                                 success: function(data) {
-                                    console.log('image upload success!');
+                                    console.log('banner logo upload success!');
                                     console.log(data);
                                     $.couch.db(dbName).openDoc(bannersDocName, {
                                         success: function(data) {
+                                            console.log('main banner doc open success!');
                                             console.log(data);
                                             bannersDoc = data;
                                             bannersDoc.data.push({
-                                                docid:bannerResp.id
+                                                docid:bannerResp.id,
+                                                creationtime:time
                                             });
                                             $.couch.db(dbName).saveDoc(bannersDoc,{
                                                 success: function(data) {
+                                                    console.log('main banner doc save success!');
                                                     console.log(data);
                                                     $('#new-banner-form').clearForm();
                                                     clearGrid();
@@ -146,7 +161,7 @@
                                     });
                                 },
                                 error: function(data) {
-                                    console.log('image upload error!');
+                                    console.log('banner logo upload error!');
                                 }
                             });
                         },
@@ -168,14 +183,14 @@
                     <ul id="bannerImage">
                     </ul>
                 </div>
-                <ul class="pills">
+                <ul class="tabs">
                     <li class="active"><a href="banners.html">banners</a></li>
                     <li><a href="authors.html">authors</a></li>
                     <li><a href="articles.html">articles</a></li>
                 </ul>
-                <div class="page-header">
-                    <h2>banners</h2>
-                </div>
+                <ul class="breadcrumb">
+                    <li class="active">all</li>
+                </ul>
                 <div class="row">
                     <div class="span8">
                         <ul id="banners-grid" class="media-grid">
