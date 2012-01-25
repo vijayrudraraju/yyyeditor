@@ -8099,6 +8099,9 @@ if ( jQuery.support.ajax ) {
 					// Do send the request
 					// This may raise an exception which is actually
 					// handled in jQuery.ajax (so no try/catch here)
+                    console.log('jquery.js ->');
+                    console.log('s.data ->');
+                    console.log(s.data);
 					xhr.send( ( s.hasContent && s.data ) || null );
 
 					// Listener

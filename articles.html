@@ -33,23 +33,23 @@
                 height: 90px;
             }
         </style>
-        <!-- Le fav and touch icons -->
-        <link rel="shortcut icon" href="">
-        <link rel="apple-touch-icon" href="">
-        <link rel="apple-touch-icon" sizes="72x72" href="">
-        <link rel="apple-touch-icon" sizes="114x114" href="">
 
         <script src="/_utils/script/json2.js"></script>
         <script src="script/jquery.js"></script>
         <script src="/_utils/script/jquery.couch.js"></script>
         <script src="script/jquery.form.js"></script>
         <script>
+            var dbName = 'yesyesyes';
+            var articlesDocName = 'articles';
+            var authorsDocName = 'authors';
+            var bannersDocName = 'banners';
+
             var articlesDoc = {};
             var authorsDoc = {};
             var bannersDoc = {};
 
             function loadBanner(image) {
-                $('#bannerImage').css('background','url(/yesyesyes/banners/'+image+')');
+                $('#bannerImage').css('background','url(/'+dbName+'/'+bannersDocName+'/'+image+')');
             }
             function loadAuthors(authorsDoc) {
                 for (var i=0;i<authorsDoc.data.length;i++) {
@@ -68,7 +68,7 @@
                             break;
                         }
                     }
-                    $('#article-grid').append('<li><a href="#"><img class="thumbnail" src="/yesyesyes/authors/'+logoName+'" alt=""/><p>'+articlesDoc.data[i].title+' by '+articlesDoc.data[i].author+'</p></a></li>');
+                    $('#article-grid').append('<li><a href="#"><img class="thumbnail" src="/'+dbName+'/'+authorsDocName+'/'+logoName+'" alt=""/><p>'+articlesDoc.data[i].title+' by '+articlesDoc.data[i].author+'</p></a></li>');
                 }
             }
             function clearGrid() {
@@ -76,7 +76,7 @@
             }
 
             $(function(){
-                $.couch.db('yesyesyes').openDoc('banners', {
+                $.couch.db(dbName).openDoc(bannersDocName, {
                     success: function(data) {
                         console.log(data);
                         bannersDoc = data;
@@ -89,7 +89,7 @@
                         console.log(data);
                     }
                 });
-                $.couch.db('yesyesyes').openDoc('authors', {
+                $.couch.db(dbName).openDoc(authorsDocName, {
                     success: function(data) {
                         console.log(data);
                         authorsDoc = data;
@@ -100,7 +100,7 @@
                         console.log(data);
                     }
                 });
-                $.couch.db('yesyesyes').openDoc('articles', {
+                $.couch.db(dbName).openDoc(articlesDocName, {
                     success: function(data) {
                         console.log(data);
                         articlesDoc = data;
@@ -137,7 +137,7 @@
                             break;
                         }
                     }
-                    $.couch.db('yesyesyes').saveDoc(authorsDoc,{
+                    $.couch.db(dbName).saveDoc(authorsDoc,{
                         success: function(data) {
                             console.log(data);
                         },
@@ -146,36 +146,42 @@
                         }
                     });
 
-                    var article = {
-                        body:$('#new-article-form textarea').val() 
-                    };
-                    $.couch.db('yesyesyes').saveDoc(article,{
-                        success: function(data) {
-                            console.log(data);
-                        },
-                        error: function(data) {
-                            console.log(data);
-                        }
-                    });
-
-                    articlesDoc.data.push({
-                        author:$('#author-select option:selected').text(),
+                    var newArticle = {
                         title:$('#new-article-form :text').val(),
-                        text:$('#new-article-form textarea').val()
-                    });
-                    $.couch.db('yesyesyes').saveDoc(articlesDoc,{
+                        author:$('#author-select option:selected'),
+                        body:$('#new-article-form textarea').val(),
+                        images:[]
+                    };
+                    var articleResp = {};
+                    $.couch.db(dbName).saveDoc(newArticle,{
                         success: function(data) {
+                            console.log('new article created');
                             console.log(data);
-                            $('#new-article-form').clearForm();
-                            clearGrid();
-                            updateGrid(articlesDoc);
+                            articleResp = data;
+
+                            articlesDoc.data.push({
+                                author:$('#author-select option:selected').text(),
+                                title:$('#new-article-form :text').val(),
+                                docid:articleResp.id
+                            });
+                            $.couch.db('yesyesyes').saveDoc(articlesDoc,{
+                                success: function(data) {
+                                    console.log(data);
+                                    $('#new-article-form').clearForm();
+                                    clearGrid();
+                                    updateGrid(articlesDoc);
+                                },
+                                error: function(data) {
+                                    console.log(data);
+                                }
+                            });
+
                         },
                         error: function(data) {
                             console.log(data);
                         }
                     });
-
-                    return false
+                    return false;
                 });
             });
         </script>

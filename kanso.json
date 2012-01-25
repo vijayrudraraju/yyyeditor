@@ -3,7 +3,16 @@
     "version": "0.0.1",
     "description": "editor interface for yyy",
     "attachments": ["banners.html","authors.html","articles.html","script","static"],
+    "handlebars": {
+        "all_partials": false,
+        "templates": "templates"
+    },
+    "modules": ["lib"],
+    "load": "lib/app",
     "dependencies": {
-        "attachments": null
+        "attachments": null,
+        "modules": null,
+        "properties": null,
+        "handlebars": null
     }
 }

@@ -15,7 +15,7 @@
         <link href="static/css/bootstrap.css" rel="stylesheet">
         <style type="text/css">
             .container > footer p {
-            text-align: center; /* center align it with the container */
+                text-align: center; /* center align it with the container */
             }
 
             .topbar .btn {
@@ -45,22 +45,27 @@
         <script src="/_utils/script/jquery.couch.js"></script>
         <script src="script/jquery.form.js"></script>
         <script>
+            var dbName = 'yesyesyes';
+            var bannersDocName = 'banners';
+
+            var bannersDoc = {};
+
             function loadBanner(image) {
-                $('#bannerImage').css('background','url(/yesyesyes/banners/'+image+')');
+                $('#bannerImage').css('background','url(/'+dbName+'/'+bannersDocName+'/'+image+')');
             }
             function updateGrid(bannersDoc) {
+                /*
                 for (var i=bannersDoc.data.length-1;i>=0;i--) {
-                    $('#banners-grid').append('<li><a href="#"><img class="thumbnail" src="/yesyesyes/banners/'+bannersDoc.data[i].name+'" alt=""><h4>'+bannersDoc.data[i].name+'</h4></a></li>');
+                    $('#banners-grid').append('<li><a href="#"><img class="thumbnail" src="/'+dbName+'/'+bannersDocName+'/'+bannersDoc.data[i].name+'" alt=""><h4>'+bannersDoc.data[i].name+'</h4></a></li>');
                 }
+                */
             }
             function clearGrid() {
                 $('#banners-grid').html('');
             }
 
-
-            var bannersDoc = {};
             $(function(){
-                $.couch.db('yesyesyes').openDoc('banners', {
+                $.couch.db(dbName).openDoc(bannersDocName, {
                     success: function(data) {
                         console.log(data);
                         bannersDoc = data;
@@ -93,30 +98,47 @@
                         return;
                     }
 
-
-                    $('#new-banner-form :hidden').val(bannersDoc._rev);
-
-                    $(this).ajaxSubmit({
-                        url: '/yesyesyes/banners',
-                        type: 'post',
-                        dataType: 'json',
+                    var d = new Date();
+                    var newBanner = {
+                        logo:filename,
+                        creationTime:d.getTime()
+                    };
+                    var bannerResp = {};
+                    $.couch.db(dbName).saveDoc(newBanner,{
                         success: function(data) {
-                            console.log('image upload success!');
+                            console.log('new banner created');
                             console.log(data);
-                            $.couch.db('yesyesyes').openDoc('banners', {
+                            bannerResp = data;
+
+                            $('#new-banner-form :hidden').val(bannerResp.rev);
+
+                            // submit new banner form
+                            $('#new-banner-form').ajaxSubmit({
+                                url: '/'+dbName+'/'+bannerResp.id,
+                                type: 'post',
+                                dataType: 'json',
                                 success: function(data) {
+                                    console.log('image upload success!');
                                     console.log(data);
-                                    bannersDoc = data;
-                                    bannersDoc.data.push({
-                                        name:filename
-                                    });
-                                    $.couch.db('yesyesyes').saveDoc(bannersDoc,{
+                                    $.couch.db(dbName).openDoc(bannersDocName, {
                                         success: function(data) {
                                             console.log(data);
-                                            $('#new-banner-form').clearForm();
-                                            clearGrid();
-                                            updateGrid(bannersDoc);
-                                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                                            bannersDoc = data;
+                                            bannersDoc.data.push({
+                                                docid:bannerResp.id
+                                            });
+                                            $.couch.db(dbName).saveDoc(bannersDoc,{
+                                                success: function(data) {
+                                                    console.log(data);
+                                                    $('#new-banner-form').clearForm();
+                                                    clearGrid();
+                                                    updateGrid(bannersDoc);
+                                                    loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                                                },
+                                                error: function(data) {
+                                                    console.log(data);
+                                                }
+                                            });
                                         },
                                         error: function(data) {
                                             console.log(data);
@@ -124,16 +146,16 @@
                                     });
                                 },
                                 error: function(data) {
-                                    console.log(data);
+                                    console.log('image upload error!');
                                 }
                             });
                         },
                         error: function(data) {
-                            console.log('image upload error!');
+                            console.log(data);
                         }
                     });
 
-                    return false
+                    return false;
                 });
             });
         </script>

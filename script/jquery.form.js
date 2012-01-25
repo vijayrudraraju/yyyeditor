@@ -190,6 +190,7 @@ $.fn.ajaxSubmit = function(options) {
 	function fileUploadXhr(a) {
 		var formdata = new FormData();
 
+
 		for (var i=0; i < a.length; i++) {
 			if (a[i].type == 'file')
 				continue;
@@ -198,10 +199,17 @@ $.fn.ajaxSubmit = function(options) {
 
 		$form.find('input:file:enabled').each(function(){
 			var name = $(this).attr('name'), files = this.files;
+
 			if (name) {
-				for (var i=0; i < files.length; i++)
+				for (var i=0; i < files.length; i++) {
 					formdata.append(name, files[i]);
+                }
 			}
+
+            //console.log(name);
+            //console.log('files ->');
+            //console.log(files);
+
 		});
 
 		if (options.extraData) {
@@ -218,20 +226,34 @@ $.fn.ajaxSubmit = function(options) {
 			type: 'POST'
 		});
 
+        //console.log('s ->');
+        //console.log(s);
+
       s.context = s.context || s;
 
       s.data = null;
       var beforeSend = s.beforeSend;
       s.beforeSend = function(xhr, o) {
+          //console.log('jquery.form.js s.beforeSend ->');
+
           o.data = formdata;
           if(xhr.upload) { // unfortunately, jQuery doesn't expose this prop (http://bugs.jquery.com/ticket/10190)
+              //console.log('xhr.upload ->');
               xhr.upload.onprogress = function(event) {
                   o.progress(event.position, event.total);
               };
           }
-          if(beforeSend)
+          if(beforeSend) {
+              //console.log('beforeSend ->');
               beforeSend.call(o, xhr, options);
+          }
+
+          //console.log('o ->');
+          //console.log(o);
       };
+      //console.log('jquery.form.js $.ajax(s) ->');
+      //console.log('s ->');
+      //console.log(s);
       $.ajax(s);
    }
 
