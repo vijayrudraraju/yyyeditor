@@ -22,7 +22,7 @@
                 border: 0;
             }
 
-            #bannerImage {
+            #banner-image {
                 width: 940px;
                 height: 100px;
                 margin: 0px auto; padding:0;
@@ -39,46 +39,66 @@
         <script src="/_utils/script/jquery.couch.js"></script>
         <script src="script/jquery.form.js"></script>
         <script>
-            var dbName = 'yesyesyes';
+            var dbName = 'yyy';
             var authorsDocName = 'authors';
             var bannersDocName = 'banners';
 
             var authorsDoc = {};
             var bannersDoc = {};
 
-            function loadBanner(image) {
-                $('#bannerImage').css('background','url(/'+dbName+'/'+bannersDocName+'/'+image+')');
-            }
-            function updateGrid(authorsDoc) {
-                /*
-                for (var i=authorsDoc.data.length-1;i>=0;i--) {
-                    $('#authors-grid').append('<li><a href="#"><img class="thumbnail" src="/'+dbName+'/'+authorsDocName+'/'+authorsDoc.data[i].logo+'" alt=""><h4>'+authorsDoc.data[i].author+'</h4></a></li>');
-                }
-                */
-            }
-            function clearGrid() {
-                $('#authors-grid').html('');
-            }
-
-            $(function(){
+            function loadBanner() {
                 $.couch.db(dbName).openDoc(bannersDocName, {
                     success: function(data) {
                         console.log(data);
                         bannersDoc = data;
                         if (bannersDoc.data.length !== 0) {
-                            console.log('load banner');
-                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                            for (var i=0;i<bannersDoc.data.length;i++) {
+                                if (bannersDoc.data[i].active) {
+                                    console.log('load banner');
+                                    $.couch.db(dbName).openDoc(bannersDoc.data[i].docid, {
+                                        success: function(data) {
+                                            console.log(data);
+                                            $('#banner-image').css('background','url(/'+dbName+'/'+data._id+'/'+data.logo+')');
+                                        },
+                                        error: function(data) {
+                                            console.log(data);
+                                        }
+                                    });
+                                }
+                            }
                         }
                     },
                     error: function(data) {
                         console.log(data);
                     }
                 });
+            }
+
+            function updateGrid() {
+                for (var i=authorsDoc.data.length-1;i>=0;i--) {
+                    console.log('updateGrid');
+                    $.couch.db(dbName).openDoc(authorsDoc.data[i].docid, {
+                        success: function(data) {
+                            $('#authors-grid').append('<li><a href="_show/author/'+data._id+'"><img class="thumbnail" src="/'+dbName+'/'+data._id+'/'+data.logo+'" alt=""><h4>'+data.author+'</h4></a></li>');
+                        },
+                        error: function(data) {
+                            console.log(data);
+                        }
+                    });
+                }
+            }
+            function clearGrid() {
+                $('#authors-grid').html('');
+            }
+
+            $(function(){
+                loadBanner();
+
                 $.couch.db(dbName).openDoc(authorsDocName, {
                     success: function(data) {
                         console.log(data);
                         authorsDoc = data;
-                        updateGrid(authorsDoc);
+                        updateGrid();
                     },
                     error: function(data) {
                         console.log(data);
@@ -155,7 +175,6 @@
                                             authorsDoc = data;
                                             authorsDoc.data.push({
                                                 author:$('#new-author-form :text').val(),
-                                                articles:[],
                                                 docid:authorResp.id
                                             });
                                             $.couch.db(dbName).saveDoc(authorsDoc,{
@@ -163,7 +182,7 @@
                                                     console.log(data);
                                                     $('#new-author-form').clearForm();
                                                     clearGrid();
-                                                    updateGrid(authorsDoc);
+                                                    updateGrid();
                                                 },
                                                 error: function(data) {
                                                     console.log(data);
@@ -196,17 +215,17 @@
         <div class="container">
             <div class="content">
                 <div class="page-header">
-                    <ul id="bannerImage">
+                    <ul id="banner-image">
                     </ul>
                 </div>
-                <ul class="pills">
+                <ul class="tabs">
                     <li class=""><a href="banners.html">banners</a></li>
                     <li class="active"><a href="authors.html">authors</a></li>
                     <li><a href="articles.html">articles</a></li>
                 </ul>
-                <div class="page-header">
-                    <h2>authors</h2>
-                </div>
+                <ul class="breadcrumb">
+                    <li class="active">all</li>
+                </ul>
                 <div class="row">
                     <div class="span8">
                         <ul id="authors-grid" class="media-grid">
@@ -239,12 +258,6 @@
                     </div>
                 </div>
             </div>
-
-            <footer>
-            <p>&copy; yesyesyes 2012</p>
-            <p>web stuff created by vijay rudraraju</p>
-            </footer>
-
         </div> <!-- /container -->
 
     </body>

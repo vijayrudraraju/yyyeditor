@@ -22,7 +22,7 @@
                 border: 0;
             }
 
-            #bannerImage {
+            #banner-image {
                 width: 940px;
                 height: 100px;
                 margin: 0px auto; padding:0;
@@ -32,6 +32,11 @@
                 width: 90px;
                 height: 90px;
             }
+
+            .yyy-active {
+                background-color: blue;
+                color:white;
+            }
         </style>
 
         <script src="/_utils/script/json2.js"></script>
@@ -39,26 +44,53 @@
         <script src="/_utils/script/jquery.couch.js"></script>
         <script src="script/jquery.form.js"></script>
         <script>
-            var dbName = 'yesyesyes';
+            var dbName = 'yyy';
             var bannersDocName = 'banners';
 
-            function loadBanner(docid) {
-                $.couch.db(dbName).openDoc(docid, {
+            var bannersDoc = {};
+
+            function loadBanner() {
+                $.couch.db(dbName).openDoc(bannersDocName, {
                     success: function(data) {
                         console.log(data);
-                        $('#bannerImage').css('background','url(/'+dbName+'/'+data._id+'/'+data.logo+')');
+                        bannersDoc = data;
+                        if (bannersDoc.data.length !== 0) {
+                            for (var i=0;i<bannersDoc.data.length;i++) {
+                                if (bannersDoc.data[i].active) {
+                                    console.log('load banner');
+                                    $.couch.db(dbName).openDoc(bannersDoc.data[i].docid, {
+                                        success: function(data) {
+                                            console.log(data);
+                                            $('#banner-image').css('background','url(/'+dbName+'/'+data._id+'/'+data.logo+')');
+                                        },
+                                        error: function(data) {
+                                            console.log(data);
+                                        }
+                                    });
+                                }
+                            }
+                        }
                     },
                     error: function(data) {
                         console.log(data);
                     }
                 });
             }
-            function updateGrid(bannersDoc) {
+
+            var updateGridCounter = 0;
+            function updateGrid() {
+                updateGridCounter = bannersDoc.data.length-1;
                 for (var i=bannersDoc.data.length-1;i>=0;i--) {
+                    console.log('updateGrid');
                     $.couch.db(dbName).openDoc(bannersDoc.data[i].docid, {
                         success: function(data) {
-                            console.log(data);
-                            $('#banners-grid').append('<li><a href="_show/banner/'+data._id+'"><img class="thumbnail" src="/'+dbName+'/'+data._id+'/'+data.logo+'" alt=""><h4>'+data.logo+'</h4></a></li>');
+                            if (bannersDoc.data[updateGridCounter].active) {
+                                $('#banners-grid').append('<li><a class="yyy-active" href="_show/banner/'+data._id+'"><img class="thumbnail" src="/'+dbName+'/'+data._id+'/'+data.logo+'" alt=""><h4 class="yyy-active">'+data.logo+'</h4></a></li>');
+                            }
+                            else {
+                                $('#banners-grid').append('<li><a href="_show/banner/'+data._id+'"><img class="thumbnail" src="/'+dbName+'/'+data._id+'/'+data.logo+'" alt=""><h4>'+data.logo+'</h4></a></li>');
+                            }
+                            updateGridCounter--;
                         },
                         error: function(data) {
                             console.log(data);
@@ -71,17 +103,12 @@
             }
 
             $(function(){
-                var bannersDoc = {};
-
                 $.couch.db(dbName).openDoc(bannersDocName, {
                     success: function(data) {
                         console.log(data);
                         bannersDoc = data;
-                        updateGrid(bannersDoc);
-                        if (bannersDoc.data.length !== 0) {
-                            console.log('load banner');
-                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].docid);
-                        }
+                        updateGrid();
+                        loadBanner();
                     },
                     error: function(data) {
                         console.log(data);
@@ -139,16 +166,18 @@
                                             bannersDoc = data;
                                             bannersDoc.data.push({
                                                 docid:bannerResp.id,
-                                                creationtime:time
+                                                creationtime:time,
+                                                active:false
                                             });
                                             $.couch.db(dbName).saveDoc(bannersDoc,{
                                                 success: function(data) {
                                                     console.log('main banner doc save success!');
                                                     console.log(data);
                                                     $('#new-banner-form').clearForm();
+                                                    $('#image-select').replaceWith('<input type="file" id="image-select" name="_attachments"/>');
                                                     clearGrid();
-                                                    updateGrid(bannersDoc);
-                                                    loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                                                    updateGrid();
+                                                    loadBanner();
                                                 },
                                                 error: function(data) {
                                                     console.log(data);
@@ -180,7 +209,7 @@
         <div class="container">
             <div class="content">
                 <div class="page-header">
-                    <ul id="bannerImage">
+                    <ul id="banner-image">
                     </ul>
                 </div>
                 <ul class="tabs">
@@ -217,12 +246,6 @@
                     </div>
                 </div>
             </div>
-
-            <footer>
-            <p>&copy; yesyesyes 2012</p>
-            <p>web stuff created by vijay rudraraju</p>
-            </footer>
-
         </div> <!-- /container -->
 
     </body>

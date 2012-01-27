@@ -2,8 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>yyy banners edit</title>
-        <meta name="description" content="page for editing banners">
+        <title>yyy author edit</title>
+        <meta name="description" content="page for editing an author">
         <meta name="programmer" content="vijay rudraraju">
 
         <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
@@ -41,8 +41,13 @@
         <script src="../../script/bootstrap-modal.js"></script>
         <script>
             var dbName = 'yyy';
+            var authorsDocName = 'authors';
             var bannersDocName = 'banners';
+
+            var authorsDoc = {};
             var bannersDoc = {};
+
+            var theseArticles = {{{articles}}};
 
             function loadBanner() {
                 $.couch.db(dbName).openDoc(bannersDocName, {
@@ -72,78 +77,12 @@
                 });
             }
 
-            function saveBannersDoc(doc) {
-                $.couch.db(dbName).saveDoc(doc, {
-                    success: function(data) {
-                        console.log(data);
-                        loadBanner();
-                    },
-                    error: function(data) {
-                        console.log(data);
-                    }
-                });
-            }
-
             $(function(){
                 loadBanner();
-                console.log('bannersDoc');
-                console.log(bannersDoc);
 
-                $('#inner-content div:first').append('<p>{{logo}}</p>');
+                $('#inner-content div:first').append('<p>{{author}}</p>');
                 $('#inner-content div:first').append('<img src="/'+dbName+'/'+{{{id}}}+'/{{logo}}" alt=""></a>');
-
-                $('#activate').click(function(e) {
-                    var thisBanner = {{{doc}}};
-
-                    e.preventDefault();
-                    if (!$.isEmptyObject(bannersDoc)) {
-                        for (var i=0;i<bannersDoc.data.length;i++) {
-                            if (bannersDoc.data[i].docid === {{{id}}}) {
-                                bannersDoc.data[i].active = true;
-                            } 
-                            else {
-                                bannersDoc.data[i].active = false;
-                            }
-                        }
-                    }
-                    saveBannersDoc(bannersDoc);
-                });
-
-                $('#delete').click(function(e) {
-                    e.preventDefault();
-                    $('#delete-confirm').modal('show'); 
-                });
-                $('#cancel-delete').click(function(e) {
-                    e.preventDefault();
-                    $('#delete-confirm').modal('hide'); 
-                });
-                $('#confirm-delete').click(function(e) {
-                    e.preventDefault();
-
-                    var thisBanner = {{{doc}}};
-                    var thisId = {{{id}}};
-
-                    if (!$.isEmptyObject(bannersDoc)) {
-                        for (var i=0;i<bannersDoc.data.length;i++) {
-                            if (bannersDoc.data[i].docid === thisId) {
-                                bannersDoc.data.splice(i,1); 
-                                break;
-                            }
-                        }
-                        saveBannersDoc(bannersDoc);
-
-
-                        $.couch.db(dbName).removeDoc({{{doc}}}, {
-                            success: function(data) {
-                                console.log(data);
-                                window.location.href = '../../banners.html';
-                            },
-                            error: function(data) {
-                                console.log(data);
-                            }
-                        });
-                    }
-                });
+                $('#inner-content div:first').append('<p>articles</p>');
             });
         </script>
     </head>
@@ -169,35 +108,25 @@
                     </ul>
                 </div>
                 <ul class="tabs">
-                    <li class="active"><a href="../../banners.html">banners</a></li>
-                    <li><a href="../../authors.html">authors</a></li>
+                    <li><a href="../../banners.html">banners</a></li>
+                    <li class="active"><a href="../../authors.html">authors</a></li>
                     <li><a href="../../articles.html">articles</a></li>
                 </ul>
                 <ul class="breadcrumb">
-                    <li><a href="../../banners.html">all</a> <span class="divider">/</span></li>
-                    <li class="active">{{logo}}</li>
+                    <li><a href="../../authors.html">all</a> <span class="divider">/</span></li>
+                    <li class="active">{{author}}</li>
                 </ul>
                 <div class="row" id="inner-content">
                     <div class="span8">
                     </div>
                     <div class="span8">
                         <form>
-                            <div class="clearfix">
-                                <div class="input">
-                                    <button id="activate" class="btn primary">make active</button>
-                                </div>
-                            </div>
-                            <div class="clearfix">
-                                <div class="input">
-                                    <button id="delete" class="btn">delete me</button>
-                                </div>
-                            </div>
                         </form>
                     </div>
                 </div>
             </div>
-
         </div> <!-- /container -->
+
     </body>
 </html>
 

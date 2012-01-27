@@ -22,7 +22,7 @@
                 border: 0;
             }
 
-            #bannerImage {
+            #banner-image {
                 width: 940px;
                 height: 100px;
                 margin: 0px auto; padding:0;
@@ -39,62 +39,97 @@
         <script src="/_utils/script/jquery.couch.js"></script>
         <script src="script/jquery.form.js"></script>
         <script>
-            var dbName = 'yesyesyes';
+            var dbName = 'yyy';
             var articlesDocName = 'articles';
             var authorsDocName = 'authors';
             var bannersDocName = 'banners';
 
             var articlesDoc = {};
             var authorsDoc = {};
+            var authorDocs = [];
             var bannersDoc = {};
 
-            function loadBanner(image) {
-                $('#bannerImage').css('background','url(/'+dbName+'/'+bannersDocName+'/'+image+')');
-            }
-            function loadAuthors(authorsDoc) {
-                for (var i=0;i<authorsDoc.data.length;i++) {
-                    $('#author-select').append('<option>'+authorsDoc.data[i].name+'</option>');
-                }
-            }
-            function clearAuthors() {
-                $('#author-select').html('');
-            }
-            function updateGrid(articlesDoc) {
-                for (var i=articlesDoc.data.length-1;i>=0;i--) {
-                    var logoName = "";
-                    for (var j=0;j<authorsDoc.data.length;j++) {
-                        if (articlesDoc.data[i].author === authorsDoc.data[j].name) {
-                            logoName = authorsDoc.data[j].logo;
-                            break;
-                        }
-                    }
-                    $('#article-grid').append('<li><a href="#"><img class="thumbnail" src="/'+dbName+'/'+authorsDocName+'/'+logoName+'" alt=""/><p>'+articlesDoc.data[i].title+' by '+articlesDoc.data[i].author+'</p></a></li>');
-                }
-            }
-            function clearGrid() {
-                $('#article-grid').html('');
-            }
-
-            $(function(){
+            function loadBanner() {
                 $.couch.db(dbName).openDoc(bannersDocName, {
                     success: function(data) {
                         console.log(data);
                         bannersDoc = data;
                         if (bannersDoc.data.length !== 0) {
-                            console.log('load banner');
-                            loadBanner(bannersDoc.data[bannersDoc.data.length-1].name);
+                            for (var i=0;i<bannersDoc.data.length;i++) {
+                                if (bannersDoc.data[i].active) {
+                                    console.log('load banner');
+                                    $.couch.db(dbName).openDoc(bannersDoc.data[i].docid, {
+                                        success: function(data) {
+                                            console.log('banner loaded');
+                                            console.log(data);
+                                            $('#banner-image').css('background','url(/'+dbName+'/'+data._id+'/'+data.logo+')');
+                                        },
+                                        error: function(data) {
+                                            console.log(data);
+                                        }
+                                    });
+                                }
+                            }
                         }
                     },
                     error: function(data) {
                         console.log(data);
                     }
                 });
+            }
+
+            function loadAuthors() {
+                for (var i=0;i<authorsDoc.data.length;i++) {
+                    $.couch.db(dbName).openDoc(authorsDoc.data[i].docid, {
+                        success: function(data) {
+                            console.log(data);
+                            authorDocs.push(data);
+                            $('#author-select').append('<option>'+data.author+'</option>');
+                        },
+                        error: function(data) {
+                            console.log(data);
+                        }
+                    });
+                }
+            }
+            function clearAuthors() {
+                authorDocs = [];
+                $('#author-select').html('');
+            }
+
+            function updateGrid() {
+                for (var i=articlesDoc.data.length-1;i>=0;i--) {
+                    console.log('updateGrid');
+                    $.couch.db(dbName).openDoc(articlesDoc.data[i].docid, {
+                        success: function(data) {
+                            console.log('article doc loaded');
+                            console.log(data.author);
+                            console.log(authorDocs);
+                            for (var j=0;j<authorDocs.length;j++) {
+                                if (data.author === authorDocs[j].author) {
+                                    $('#articles-grid').append('<li><a href="_show/article/'+data._id+'"><img class="thumbnail" src="/'+dbName+'/'+authorDocs[j]._id+'/'+authorDocs[j].logo+'" alt=""><h4>'+data.title+' by '+data.author+'</h4></a></li>');
+                                }
+                            }
+                        },
+                        error: function(data) {
+                            console.log(data);
+                        }
+                    });
+                }
+            }
+            function clearGrid() {
+                $('#articles-grid').html('');
+            }
+
+            $(function(){
+                loadBanner();
+
                 $.couch.db(dbName).openDoc(authorsDocName, {
                     success: function(data) {
                         console.log(data);
                         authorsDoc = data;
                         clearAuthors();
-                        loadAuthors(authorsDoc);
+                        loadAuthors();
                     },
                     error: function(data) {
                         console.log(data);
@@ -104,7 +139,7 @@
                     success: function(data) {
                         console.log(data);
                         articlesDoc = data;
-                        updateGrid(articlesDoc);
+                        updateGrid();
                     },
                     error: function(data) {
                         console.log(data);
@@ -131,27 +166,14 @@
 
                     $('#new-article-form :hidden').val(articlesDoc._rev);
 
-                    for (var i=0;i<authorsDoc.data.length;i++) {
-                        if ($('#author-select option:selected').text() === authorsDoc.data[i].name) {
-                            authorsDoc.data[i].articles.push($('#new-article-form :text').val());
-                            break;
-                        }
-                    }
-                    $.couch.db(dbName).saveDoc(authorsDoc,{
-                        success: function(data) {
-                            console.log(data);
-                        },
-                        error: function(data) {
-                            console.log(data);
-                        }
-                    });
-
                     var newArticle = {
                         title:$('#new-article-form :text').val(),
-                        author:$('#author-select option:selected'),
+                        author:$('#author-select option:selected').text(),
                         body:$('#new-article-form textarea').val(),
                         images:[]
                     };
+                    console.log('new article');
+                    console.log(newArticle);
                     var articleResp = {};
                     $.couch.db(dbName).saveDoc(newArticle,{
                         success: function(data) {
@@ -167,9 +189,26 @@
                             $.couch.db('yesyesyes').saveDoc(articlesDoc,{
                                 success: function(data) {
                                     console.log(data);
+                                    var thisAuthor = {};
+                                    for (var i=0;i<authorDocs.length;i++) {
+                                        if ($('#author-select option:selected').text() === authorDocs[i].author) {
+                                            thisAuthor = authorDocs[i];
+                                            thisAuthor.articles.push(articleResp.id);
+                                            break;
+                                        }
+                                    }
+                                    $.couch.db(dbName).saveDoc(thisAuthor,{
+                                        success: function(data) {
+                                            console.log(data);
+                                        },
+                                        error: function(data) {
+                                            console.log(data);
+                                        }
+                                    });
+
                                     $('#new-article-form').clearForm();
                                     clearGrid();
-                                    updateGrid(articlesDoc);
+                                    updateGrid();
                                 },
                                 error: function(data) {
                                     console.log(data);
@@ -191,11 +230,10 @@
         <div class="container">
             <div class="content">
                 <div class="page-header">
-                    <!--<h1>Page name <small>Supporting text or tagline</small></h1>-->
-                    <ul id="bannerImage">
+                    <ul id="banner-image">
                     </ul>
                 </div>
-                <ul class="pills">
+                <ul class="tabs">
                     <li><a href="banners.html">banners</a></li>
                     <li><a href="authors.html">authors</a></li>
                     <li class="active"><a href="articles.html">articles</a></li>
@@ -205,7 +243,7 @@
                 </div>
                 <div class="row">
                     <div class="span8">
-                        <ul id="article-grid" class="media-grid">
+                        <ul id="articles-grid" class="media-grid">
                         </ul>
                     </div>
                     <div class="span8">
@@ -243,11 +281,6 @@
                     </div>
                 </div>
             </div>
-
-            <footer>
-            <p>&copy; YesYesYes 2012</p>
-            <p>web stuff created by vijay rudraraju</p>
-            </footer>
 
         </div> <!-- /container -->
 

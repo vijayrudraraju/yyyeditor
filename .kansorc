@@ -1,5 +1,5 @@
 exports.env = {
     'default': {
-        db: 'http://vijay:vijay@localhost:5984/yesyesyes'
+        db: 'http://vijay:vijay@localhost:5984/yyy'
     }
 }
