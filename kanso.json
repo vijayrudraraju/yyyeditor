@@ -1,5 +1,5 @@
 {
-    "name": "yyyeditor",
+    "name": "edit",
     "version": "0.0.1",
     "description": "editor interface for yyy",
     "attachments": ["banners.html","authors.html","articles.html","script","static"],

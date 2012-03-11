@@ -41,6 +41,7 @@
 
         <script src="/_utils/script/json2.js"></script>
         <script src="script/jquery.js"></script>
+        <!--<script src="/_utils/script/jquery.js"></script>-->
         <script src="/_utils/script/jquery.couch.js"></script>
         <script src="script/jquery.form.js"></script>
         <script>
@@ -110,8 +111,10 @@
                         updateGrid();
                         loadBanner();
                     },
-                    error: function(data) {
-                        console.log(data);
+                    error: function(data1,data2,data3) {
+                        console.log(data1);
+                        console.log(data2);
+                        console.log(data3);
                     }
                 });
 
@@ -150,6 +153,8 @@
 
                             // add rev number to form
                             $('#new-banner-form :hidden').val(bannerResp.rev);
+
+                            console.log(bannerResp.id);
 
                             // submit new banner form
                             $('#new-banner-form').ajaxSubmit({

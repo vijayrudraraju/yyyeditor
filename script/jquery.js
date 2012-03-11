@@ -7345,6 +7345,8 @@ jQuery.extend({
 				lastModified,
 				etag;
 
+            console.log('vijay jquery');
+            console.log(status);
 			// If successful, handle type chaining
 			if ( status >= 200 && status < 300 || status === 304 ) {
 
@@ -7369,11 +7371,13 @@ jQuery.extend({
 				} else {
 
 					try {
+                        console.log('vijay try!');
 						success = ajaxConvert( s, response );
 						statusText = "success";
 						isSuccess = true;
 					} catch(e) {
 						// We have a parsererror
+                        console.log('vijay error!');
 						statusText = "parsererror";
 						error = e;
 					}
@@ -7743,6 +7747,9 @@ function ajaxHandleResponses( s, jqXHR, responses ) {
 
 // Chain conversions given the request and the original response
 function ajaxConvert( s, response ) {
+    console.log('vijay ajaxConvert');
+    console.log(s);
+    console.log(response);
 
 	// Apply the dataFilter if provided
 	if ( s.dataFilter ) {

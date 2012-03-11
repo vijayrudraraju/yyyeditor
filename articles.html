@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>yyy articles edit</title>
+        <title>YESYESYES articles edit</title>
         <meta name="description" content="page for editing articles">
         <meta name="programmer" content="vijay rudraraju">
 
@@ -35,7 +35,8 @@
         </style>
 
         <script src="/_utils/script/json2.js"></script>
-        <script src="script/jquery.js"></script>
+        <!--<script src="script/jquery.js"></script>-->
+        <script src="/_utils/script/jquery.js"></script>
         <script src="/_utils/script/jquery.couch.js"></script>
         <script src="script/jquery.form.js"></script>
         <script>
@@ -186,7 +187,9 @@
                                 title:$('#new-article-form :text').val(),
                                 docid:articleResp.id
                             });
-                            $.couch.db('yesyesyes').saveDoc(articlesDoc,{
+                            console.log('this doc about to be saved');
+                            console.log(articlesDoc);
+                            $.couch.db(dbName).saveDoc(articlesDoc,{
                                 success: function(data) {
                                     console.log(data);
                                     var thisAuthor = {};
@@ -211,12 +214,14 @@
                                     updateGrid();
                                 },
                                 error: function(data) {
+                                    console.log('articleSDoc saved error');
                                     console.log(data);
                                 }
                             });
 
                         },
                         error: function(data) {
+                            console.log('articleDoc saved error');
                             console.log(data);
                         }
                     });
@@ -234,7 +239,7 @@
                     </ul>
                 </div>
                 <ul class="tabs">
-                    <li><a href="banners.html">banners</a></li>
+                    <!--<li><a href="banners.html">banners</a></li>-->
                     <li><a href="authors.html">authors</a></li>
                     <li class="active"><a href="articles.html">articles</a></li>
                 </ul>
