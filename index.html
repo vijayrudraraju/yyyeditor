@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>YESYESYES edit</title>
+        <meta name="description" content="page for editing yesyesyes">
+        <meta name="programmer" content="vijay rudraraju">
+
+        <style type="text/css">
+            
+            html {
+                margin: 0px;
+                padding: 0px;
+                border: 0px;
+            }
+            body {
+                position: relative;
+                top: 0px;
+                margin: 0px;
+                padding: 0px;
+                border: 0px;
+            }
+            h1 {
+                text-align: center;
+                font-size: 120px;
+                margin: 0px;
+                padding: 0px;
+                border: 0px;
+            }
+            h2 {
+                text-align: center;
+                font-size: 30px;
+                margin: 0px;
+                padding: 0px;
+                border: 0px;
+            }
+
+            .container {
+                position: relative;
+                width: 100%;
+            }
+
+            .tabs {
+                width: 960px;
+                height: 30px;
+                margin: 20px;
+            }
+            .tab {
+                padding: 5px;
+                float: left;
+            }
+
+            .page-header {
+                width: 960px;
+                margin-top: 5px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .section-header {
+                width: 960px;
+                margin-top: 30px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .section {
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+            .section-list {
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .page-body {
+                width: 776px;
+                margin-top: 5px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .grid {
+                width: 736px;
+                padding: 0px;
+                margin: 0px;
+                list-style-type: none;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .cell {
+                float: left;
+                width: 140;
+                height: 140px;
+                padding: 0px;
+                margin: 20px;
+                border: 2px solid black;
+            }
+
+            .thumbnail {
+                width: 90px;
+                height: 90px;
+            }
+
+            #text-title {
+                width: 300px;
+            }
+            #text-author {
+                width: 200px;
+            }
+            #main-text {
+                width: 100%;
+            }
+
+        </style>
+
+        <script type="text/javascript" src="/_utils/script/json2.js"></script>
+        <script type="text/javascript" src="script/jquery.js"></script>
+        <script type="text/javascript" src="/_utils/script/jquery.couch.js"></script>
+        <script type="text/javascript" src="script/jquery.iframe-transport.js"></script>
+        <script type="text/javascript" src="script/underscore.js"></script>
+        <script type="text/javascript" src="script/backbone.js"></script>
+        <script type="text/javascript" src="script/backbone-couchdb.js"></script>
+        <script type="text/javascript" src="script/file-upload.js"></script>
+
+        <script>
+            /*
+            var dbName = 'yyy';
+            var articlesDocName = 'submissions';
+            var articlesDoc = {};
+            */
+
+            /*
+            function updateGrid() {
+
+                for (var i=articlesDoc.data.length-1;i>=0;i--) {
+
+                    console.log('updateArticleGrid');
+
+                    $.couch.db(dbName).openDoc(articlesDoc.data[i].docid, {
+
+                        success: function(data) {
+                            console.log('article doc loaded');
+                            console.log(data.author);
+                            console.log(authorDocs);
+                            for (var j=0;j<authorDocs.length;j++) {
+                                if (data.author === authorDocs[j].author) {
+                                    $('#articles-grid').append('<li><a href="_show/article/'+data._id+'"><img class="thumbnail" src="/'+dbName+'/'+authorDocs[j]._id+'/'+authorDocs[j].logo+'" alt=""><h4>'+data.title+' by '+data.author+'</h4></a></li>');
+                                }
+                            }
+                        },
+                        error: function(data) {
+                            console.log(data);
+                        }
+
+                    });
+
+                }
+            }
+            function clearGrid() {
+                $('#articles-grid').html('');
+            }
+            */
+
+            $(function(){
+                trigAll();
+
+                Backbone.couch_connector.config.db_name = "yyy";
+                Backbone.couch_connector.config.ddoc_name = "edit";
+
+                window.PageModel= Backbone.Model.extend({
+                    url: '/pages'
+                }); 
+
+                window.PageCollection = Backbone.Collection.extend({ 
+                    model: PageModel,
+                });
+                window.TextCollection = Backbone.Collection.extend({ 
+                    model: PageModel,
+                    db: {
+                       view: "texts" 
+                    }
+                });
+                window.ImagesCollection = Backbone.Collection.extend({ 
+                    model: PageModel,
+                    db: {
+                       view: "images" 
+                    }
+                });
+
+                window.Pages = new PageCollection;
+                window.Texts = new TextCollection;
+                window.Images = new ImagesCollection;
+
+                window.NewTextView = Backbone.View.extend({
+                    initialize: function() {
+                        Texts.on('reset', this.onReset, this);
+                        Texts.fetch({success: function() { console.log('fetch success');}});
+                    },
+                    onReset: function(coll,resp) {
+                        console.log('onReset');
+                        console.log('coll', coll);
+                        console.log('resp', resp);
+
+                        $('#text-articles-grid ul').html('');
+                        Texts.each(this.addOne);
+                    },
+                    addOne: function(model) {
+                        console.log(model);
+                        $('#text-articles-grid ul').append(
+                        '<li>'+model.get('title')+'<br/>'+model.get('author')+'</li>'
+                        );
+                    },
+                    saveToServer: function() {
+                        console.log('saveToServer');
+
+                        Texts.add({
+                            title:$('#text-title').val(),
+                            author:$('#text-author').val(),
+                            text:$('#main-text').val()
+                        });
+
+                        Texts.at(Texts.length-1).save({},{
+                            success: function() { 
+                                console.log('save success ' + Texts.at(Texts.length-1).id + ' ' + Texts.at(Texts.length-1).cid); 
+                                Texts.fetch({success: function() { console.log('post save fetch success');}});
+                            }
+                        });
+                    }
+                });
+                window.NewText = new NewTextView;
+                $('#new-text-form').submit(function(e) {
+                    e.preventDefault(); 
+                    window.NewText.saveToServer(); 
+                });
+
+
+                window.NewImageView = Backbone.View.extend({
+                    initialize: function() {
+                        Images.on('reset', this.onReset, this);
+                        Images.fetch({success: function() { console.log('fetch success');}});
+                    },
+                    onReset: function(coll,resp) {
+                        console.log('onReset');
+                        console.log('coll', coll);
+                        console.log('resp', resp);
+
+                        $('#images-articles-grid ul').html('');
+                        Images.each(this.addOne);
+                    },
+                    addOne: function(model) {
+                        console.log(model);
+                        $('#images-articles-grid ul').append(
+                        '<li>'+model.get('title')+'<br/>'+model.get('author')+'</li>'
+                        );
+                    },
+                    saveToServer: function() {
+                        console.log('saveToServer');
+
+                        Images.add({
+                            title:$('#images-title').val(),
+                            author:$('#images-author').val(),
+                            images:$('#main-images').val()
+                        });
+
+                        Images.at(Images.length-1).save({},{
+                            success: function() { 
+                                console.log('save success ' + Images.at(Images.length-1).id + ' ' + Images.at(Images.length-1).cid); 
+                                Images.fetch({success: function() { console.log('post save fetch success');}});
+                            }
+                        });
+                    }
+                });
+                window.NewImage = new NewImageView;
+                $('#new-images-form').submit(function(e) {
+                    e.preventDefault(); 
+                    window.NewImage.saveToServer(); 
+                });
+
+
+            });
+
+            function trigAll() {
+                $('.section-header h2').html('all');
+                $('#text-section').hide();
+                $('#images-section').hide();
+                $('#videos-section').hide();
+                $('#music-section').hide();
+            }
+            function trigText() {
+                $('.section-header h2').html('text');
+                $('#text-section').show();
+                $('#images-section').hide();
+                $('#videos-section').hide();
+                $('#music-section').hide();
+            }
+            function trigImages() {
+                $('.section-header h2').html('images');
+                $('#text-section').hide();
+                $('#images-section').show();
+                $('#videos-section').hide();
+                $('#music-section').hide();
+            }
+            function trigVideos() {
+                $('.section-header h2').html('videos');
+                $('#text-section').hide();
+                $('#images-section').hide();
+                $('#videos-section').show();
+                $('#music-section').hide();
+            }
+            function trigMusic() {
+                $('.section-header h2').html('music');
+                $('#text-section').hide();
+                $('#images-section').hide();
+                $('#videos-section').hide();
+                $('#music-section').show();
+            }
+
+        </script>
+    </head>
+
+    <body>
+
+        <div class="container">
+
+            <div class="content">
+
+                <div class="page-header">
+                    <h1>YESYESYES</h1>
+                    <h2>San Francisco Arts and Culture</h2>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab"><a href="javascript:trigAll()">all</a></div>
+                    <div class="tab"><a href="javascript:trigText()">text</a></div>
+                    <div class="tab"><a href="javascript:trigImages()">images</a></div>
+                    <div class="tab"><a href="javascript:trigVideos()">videos</a></div>
+                    <div class="tab"><a href="javascript:trigMusic()">music</a></div>
+                </div>
+
+                <div class="section-header">
+                    <h2>all</h2>
+                </div>
+
+                <div>
+
+
+
+                    <div id="text-section" class="section">
+                        <form id="new-text-form" action="" method="post" class="">
+                            <fieldset>
+                                <legend>new text form</legend>
+
+                                <div>
+                                    <label for="text-title">new text title</label>
+                                    <div>
+                                        <input id="text-title" type="text" placeholder="text title" name="title"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="text-author">new text author</label>
+                                    <div>
+                                        <input id="text-author" type="text" placeholder="text author" name="author"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="main-text">new main text</label>
+                                    <div>
+                                        <textarea id="main-text" placeholder="main text" name="text" rows="20"></textarea>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div>
+                                        <input type="submit" value="create new article"/>
+                                        <input type="hidden" name="_rev"/>
+                                    </div>
+                                </div>
+
+                            </fieldset>
+                        </form>
+
+                        <div id="text-articles-grid" class="section-list">
+                            <ul>
+                            </ul>
+                        </div>
+
+                    </div>
+
+
+
+                    <div id="images-section" class="section">
+                        <form id="new-images-form" action="" method="post" class="">
+                            <fieldset>
+                                <legend>new images form</legend>
+
+                                <div>
+                                    <label for="images-title">new images title</label>
+                                    <div>
+                                        <input id="images-title" type="text" placeholder="images title" name="title"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="images-author">new images author</label>
+                                    <div>
+                                        <input id="images-author" type="text" placeholder="text author" name="author"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="main-images">new main images</label>
+                                    <div>
+                                        <input type="file" id="main-images" name="attachments"/>
+                                    </div>
+                                </div>
+
+                            </fieldset>
+                        </form>
+
+                        <div id="images-articles-grid" class="section-list">
+                            <ul>
+                            </ul>
+                        </div>
+
+                    </div>
+
+
+
+                    <div id="videos-section">
+
+                    </div>
+
+
+
+                    <div id="music-section">
+
+                    </div>
+
+
+
+                </div>
+
+            </div><!-- /content-->
+
+        </div> <!-- /container -->
+
+    </body>
+</html>
+

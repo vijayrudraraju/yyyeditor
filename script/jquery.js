@@ -7345,8 +7345,8 @@ jQuery.extend({
 				lastModified,
 				etag;
 
-            console.log('vijay jquery');
-            console.log(status);
+            //console.log('vijay jquery');
+            //console.log(status);
 			// If successful, handle type chaining
 			if ( status >= 200 && status < 300 || status === 304 ) {
 
@@ -7371,13 +7371,13 @@ jQuery.extend({
 				} else {
 
 					try {
-                        console.log('vijay try!');
+                        //console.log('vijay try!');
 						success = ajaxConvert( s, response );
 						statusText = "success";
 						isSuccess = true;
 					} catch(e) {
 						// We have a parsererror
-                        console.log('vijay error!');
+                        //console.log('vijay error!');
 						statusText = "parsererror";
 						error = e;
 					}
@@ -7747,9 +7747,9 @@ function ajaxHandleResponses( s, jqXHR, responses ) {
 
 // Chain conversions given the request and the original response
 function ajaxConvert( s, response ) {
-    console.log('vijay ajaxConvert');
-    console.log(s);
-    console.log(response);
+    //console.log('vijay ajaxConvert');
+    //console.log(s);
+    //console.log(response);
 
 	// Apply the dataFilter if provided
 	if ( s.dataFilter ) {
@@ -8106,9 +8106,9 @@ if ( jQuery.support.ajax ) {
 					// Do send the request
 					// This may raise an exception which is actually
 					// handled in jQuery.ajax (so no try/catch here)
-                    console.log('jquery.js ->');
-                    console.log('s.data ->');
-                    console.log(s.data);
+                    //console.log('jquery.js ->');
+                    //console.log('s.data ->');
+                    //console.log(s.data);
 					xhr.send( ( s.hasContent && s.data ) || null );
 
 					// Listener

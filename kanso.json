@@ -2,7 +2,7 @@
     "name": "edit",
     "version": "0.0.1",
     "description": "editor interface for yyy",
-    "attachments": ["banners.html","authors.html","articles.html","script","static"],
+    "attachments": ["test.html","index.html","banners.html","authors.html","articles.html","script","static"],
     "handlebars": {
         "all_partials": false,
         "templates": "templates"
