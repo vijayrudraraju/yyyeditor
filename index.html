@@ -35,6 +35,20 @@
                 border: 0px;
             }
 
+            a {
+                font-size: 30px;
+            }
+
+            fieldset div {
+                padding: 10px;
+            }
+
+
+
+            .bold {
+                font-weight: bold;
+            }
+
             .container {
                 position: relative;
                 width: 100%;
@@ -42,11 +56,11 @@
 
             .tabs {
                 width: 960px;
-                height: 30px;
+                height: 70px;
                 margin: 20px;
             }
             .tab {
-                padding: 5px;
+                padding: 20px;
                 float: left;
             }
 
@@ -59,47 +73,22 @@
 
             .section-header {
                 width: 960px;
+                height: 50px;
                 margin-top: 30px;
+                margin-bottom: 30px;
                 margin-left: auto;
                 margin-right: auto;
             }
 
             .section {
-                margin-top: 20px;
-                margin-bottom: 20px;
+                margin: 20px;
             }
             .section-list {
                 margin-top: 20px;
                 margin-bottom: 20px;
             }
 
-            .page-body {
-                width: 776px;
-                margin-top: 5px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            .grid {
-                width: 736px;
-                padding: 0px;
-                margin: 0px;
-                list-style-type: none;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            .cell {
-                float: left;
-                width: 140;
-                height: 140px;
-                padding: 0px;
-                margin: 20px;
-                border: 2px solid black;
-            }
 
-            .thumbnail {
-                width: 90px;
-                height: 90px;
-            }
 
             #text-title {
                 width: 300px;
@@ -116,51 +105,12 @@
         <script type="text/javascript" src="/_utils/script/json2.js"></script>
         <script type="text/javascript" src="script/jquery.js"></script>
         <script type="text/javascript" src="/_utils/script/jquery.couch.js"></script>
-        <script type="text/javascript" src="script/jquery.iframe-transport.js"></script>
         <script type="text/javascript" src="script/underscore.js"></script>
         <script type="text/javascript" src="script/backbone.js"></script>
         <script type="text/javascript" src="script/backbone-couchdb.js"></script>
-        <script type="text/javascript" src="script/file-upload.js"></script>
+        <script src="script/jquery.form.js"></script>
 
         <script>
-            /*
-            var dbName = 'yyy';
-            var articlesDocName = 'submissions';
-            var articlesDoc = {};
-            */
-
-            /*
-            function updateGrid() {
-
-                for (var i=articlesDoc.data.length-1;i>=0;i--) {
-
-                    console.log('updateArticleGrid');
-
-                    $.couch.db(dbName).openDoc(articlesDoc.data[i].docid, {
-
-                        success: function(data) {
-                            console.log('article doc loaded');
-                            console.log(data.author);
-                            console.log(authorDocs);
-                            for (var j=0;j<authorDocs.length;j++) {
-                                if (data.author === authorDocs[j].author) {
-                                    $('#articles-grid').append('<li><a href="_show/article/'+data._id+'"><img class="thumbnail" src="/'+dbName+'/'+authorDocs[j]._id+'/'+authorDocs[j].logo+'" alt=""><h4>'+data.title+' by '+data.author+'</h4></a></li>');
-                                }
-                            }
-                        },
-                        error: function(data) {
-                            console.log(data);
-                        }
-
-                    });
-
-                }
-            }
-            function clearGrid() {
-                $('#articles-grid').html('');
-            }
-            */
-
             $(function(){
                 trigAll();
 
@@ -173,6 +123,9 @@
 
                 window.PageCollection = Backbone.Collection.extend({ 
                     model: PageModel,
+                    db: {
+                       view: "all" 
+                    }
                 });
                 window.TextCollection = Backbone.Collection.extend({ 
                     model: PageModel,
@@ -191,15 +144,33 @@
                 window.Texts = new TextCollection;
                 window.Images = new ImagesCollection;
 
+                window.NewAllView = Backbone.View.extend({
+                    initialize: function() {
+                        Pages.on('reset', this.onReset, this);
+                        Pages.fetch({success: function() { console.log('all fetch success');}});
+                    },
+                    onReset: function(coll,resp) {
+                        console.log('onReset all');
+
+                        $('#all-articles-grid ul').html('');
+                        Pages.each(this.addOne);
+                    },
+                    addOne: function(model) {
+                        console.log(model);
+                        $('#all-articles-grid ul').append(
+                        '<li>'+model.get('title')+'<br/>'+model.get('author')+'</li>'
+                        );
+                    },
+                });
+                window.NewAll = new NewAllView;
+
                 window.NewTextView = Backbone.View.extend({
                     initialize: function() {
                         Texts.on('reset', this.onReset, this);
-                        Texts.fetch({success: function() { console.log('fetch success');}});
+                        Texts.fetch({success: function() { console.log('text fetch success');}});
                     },
                     onReset: function(coll,resp) {
-                        console.log('onReset');
-                        console.log('coll', coll);
-                        console.log('resp', resp);
+                        console.log('onReset text');
 
                         $('#text-articles-grid ul').html('');
                         Texts.each(this.addOne);
@@ -211,7 +182,7 @@
                         );
                     },
                     saveToServer: function() {
-                        console.log('saveToServer');
+                        console.log('saveToServer text');
 
                         Texts.add({
                             title:$('#text-title').val(),
@@ -236,13 +207,12 @@
 
                 window.NewImageView = Backbone.View.extend({
                     initialize: function() {
+                        $('#main-images').change(this.fileChange);
                         Images.on('reset', this.onReset, this);
-                        Images.fetch({success: function() { console.log('fetch success');}});
+                        Images.fetch({success: function() { console.log('images fetch success');}});
                     },
                     onReset: function(coll,resp) {
-                        console.log('onReset');
-                        console.log('coll', coll);
-                        console.log('resp', resp);
+                        console.log('onReset images');
 
                         $('#images-articles-grid ul').html('');
                         Images.each(this.addOne);
@@ -253,18 +223,50 @@
                         '<li>'+model.get('title')+'<br/>'+model.get('author')+'</li>'
                         );
                     },
+                    fileChange: function(ev) {
+                        var fileNames = [];
+                        var data = {};
+                        var i = 0;
+                        $('#new-images-form :file').each(function() {
+                            data[this.name] = this.value;
+                            var stringArray = this.value.split("\\");
+                            fileNames[i] = stringArray[stringArray.length-1];
+                            i++;
+                        });
+                        if (!data._attachments || data._attachments.length == 0) {
+                            alert('Please some images from your computer for the author');
+                            return;
+                        }
+                        for (var i=0;i<fileNames.length;i++) {
+                            $('#image-files').append('<li>'+fileNames[i]+'</li>');
+                        }
+                    },
                     saveToServer: function() {
-                        console.log('saveToServer');
+                        console.log('saveToServer images');
 
                         Images.add({
                             title:$('#images-title').val(),
                             author:$('#images-author').val(),
-                            images:$('#main-images').val()
+                            images:$('#main-images').val(),
+                            filenames:fileNames
                         });
 
                         Images.at(Images.length-1).save({},{
                             success: function() { 
                                 console.log('save success ' + Images.at(Images.length-1).id + ' ' + Images.at(Images.length-1).cid); 
+                                $('#new-images-form :hidden').val(Images.at(Images.length-1).get('_rev'));
+                                $('#new-images-form').ajaxSubmit({
+                                    url: '/yyy/'+Images.at(Images.length-1).id,
+                                    type: 'post',
+                                    dataType: 'json',
+                                    success: function(data) {
+                                        console.log('banner logo upload success!');
+                                        console.log(data);
+                                    },
+                                    error: function(data) {
+                                        console.log('banner logo upload error!');
+                                    }
+                                });
                                 Images.fetch({success: function() { console.log('post save fetch success');}});
                             }
                         });
@@ -281,38 +283,78 @@
 
             function trigAll() {
                 $('.section-header h2').html('all');
+                $('#all-link').addClass('bold');
+
+                $('#all-section').show();
                 $('#text-section').hide();
                 $('#images-section').hide();
                 $('#videos-section').hide();
                 $('#music-section').hide();
+
+                $('#text-link').removeClass('bold');
+                $('#images-link').removeClass('bold');
+                $('#videos-link').removeClass('bold');
+                $('#music-link').removeClass('bold');
             }
             function trigText() {
                 $('.section-header h2').html('text');
+                $('#text-link').addClass('bold');
+
+                $('#all-section').hide();
                 $('#text-section').show();
                 $('#images-section').hide();
                 $('#videos-section').hide();
                 $('#music-section').hide();
+
+                $('#all-link').removeClass('bold');
+                $('#images-link').removeClass('bold');
+                $('#videos-link').removeClass('bold');
+                $('#music-link').removeClass('bold');
             }
             function trigImages() {
                 $('.section-header h2').html('images');
+                $('#images-link').addClass('bold');
+
+                $('#all-section').hide();
                 $('#text-section').hide();
                 $('#images-section').show();
                 $('#videos-section').hide();
                 $('#music-section').hide();
+
+                $('#all-link').removeClass('bold');
+                $('#text-link').removeClass('bold');
+                $('#videos-link').removeClass('bold');
+                $('#music-link').removeClass('bold');
             }
             function trigVideos() {
                 $('.section-header h2').html('videos');
+                $('#videos-link').addClass('bold');
+
+                $('#all-section').hide();
                 $('#text-section').hide();
                 $('#images-section').hide();
                 $('#videos-section').show();
                 $('#music-section').hide();
+
+                $('#all-link').removeClass('bold');
+                $('#text-link').removeClass('bold');
+                $('#images-link').removeClass('bold');
+                $('#music-link').removeClass('bold');
             }
             function trigMusic() {
                 $('.section-header h2').html('music');
+                $('#music-link').addClass('bold');
+
+                $('#all-section').hide();
                 $('#text-section').hide();
                 $('#images-section').hide();
                 $('#videos-section').hide();
                 $('#music-section').show();
+
+                $('#all-link').removeClass('bold');
+                $('#text-link').removeClass('bold');
+                $('#images-link').removeClass('bold');
+                $('#videos-link').removeClass('bold');
             }
 
         </script>
@@ -330,11 +372,11 @@
                 </div>
 
                 <div class="tabs">
-                    <div class="tab"><a href="javascript:trigAll()">all</a></div>
-                    <div class="tab"><a href="javascript:trigText()">text</a></div>
-                    <div class="tab"><a href="javascript:trigImages()">images</a></div>
-                    <div class="tab"><a href="javascript:trigVideos()">videos</a></div>
-                    <div class="tab"><a href="javascript:trigMusic()">music</a></div>
+                    <div class="tab"><a id="all-link" href="javascript:trigAll()">all</a></div>
+                    <div class="tab"><a id="text-link" href="javascript:trigText()">text</a></div>
+                    <div class="tab"><a id="images-link" href="javascript:trigImages()">images</a></div>
+                    <div class="tab"><a id="videos-link" href="javascript:trigVideos()">videos</a></div>
+                    <div class="tab"><a id="music-link" href="javascript:trigMusic()">music</a></div>
                 </div>
 
                 <div class="section-header">
@@ -345,7 +387,19 @@
 
 
 
+                    <div id="all-section" class="section">
+
+                        <div id="all-articles-grid" class="section-list">
+                            <ul>
+                            </ul>
+                        </div>
+
+                    </div>
+
+
+
                     <div id="text-section" class="section">
+
                         <form id="new-text-form" action="" method="post" class="">
                             <fieldset>
                                 <legend>new text form</legend>
@@ -391,6 +445,7 @@
 
 
                     <div id="images-section" class="section">
+
                         <form id="new-images-form" action="" method="post" class="">
                             <fieldset>
                                 <legend>new images form</legend>
@@ -398,21 +453,30 @@
                                 <div>
                                     <label for="images-title">new images title</label>
                                     <div>
-                                        <input id="images-title" type="text" placeholder="images title" name="title"/>
+                                        <input id="images-title" type="text" placeholder="images title"/>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label for="images-author">new images author</label>
                                     <div>
-                                        <input id="images-author" type="text" placeholder="text author" name="author"/>
+                                        <input id="images-author" type="text" placeholder="text author"/>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label for="main-images">new main images</label>
                                     <div>
-                                        <input type="file" id="main-images" name="attachments"/>
+                                        <input type="file" id="main-images" name="_attachments" multiple=""/>
+                                        <ul id="image-files">
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div>
+                                        <input type="submit" value="create new article"/>
+                                        <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
 
