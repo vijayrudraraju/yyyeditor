@@ -42,7 +42,12 @@
             fieldset div {
                 padding: 10px;
             }
-
+            textarea {
+                width: 100%;
+            }
+            input[type=text] {
+                width: 400px;
+            }
 
 
             .bold {
@@ -86,18 +91,6 @@
             .section-list {
                 margin-top: 20px;
                 margin-bottom: 20px;
-            }
-
-
-
-            #text-title {
-                width: 300px;
-            }
-            #text-author {
-                width: 200px;
-            }
-            #main-text {
-                width: 100%;
             }
 
         </style>
@@ -165,6 +158,10 @@
                 window.NewAll = new NewAllView;
 
                 window.NewTextView = Backbone.View.extend({
+                    selectedId: 0,
+                    events: {
+                        "click .text-edit-button": "editOne"
+                    },
                     initialize: function() {
                         Texts.on('reset', this.onReset, this);
                         Texts.fetch({success: function() { console.log('text fetch success');}});
@@ -175,19 +172,37 @@
                         $('#text-articles-grid ul').html('');
                         Texts.each(this.addOne);
                     },
+                    editOne: function(ev) {
+                        console.log('editOne ',ev,ev.target.id);
+
+                        var stringArray = ev.target.id.split('-');
+                        var model = Texts.getByCid(stringArray[2]);
+                        console.log(model);
+
+                        this.selectedId = model.id;
+
+                        $('#text-new-form').hide();
+                        $('#text-edit-form').show();
+                        $('#text-articles-grid').hide();
+                        
+                        $('#text-edit-title').val(model.get('title'));
+                        $('#text-edit-author').val(model.get('author'));
+                        $('#text-edit-main').val(model.get('text'));
+                        $('#text-edit-form :hidden').val(model.get('_rev'));
+                    },
                     addOne: function(model) {
                         console.log(model);
                         $('#text-articles-grid ul').append(
-                        '<li>'+model.get('title')+'<br/>'+model.get('author')+'</li>'
+                        '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="text-edit-button" id="text-edit-'+model.cid+'">edit</button><button type="button" class="text-view-button" id="text-view-'+model.cid+'">view</button></li>'
                         );
                     },
-                    saveToServer: function() {
-                        console.log('saveToServer text');
+                    saveNewToServer: function() {
+                        console.log('saveNewToServer text');
 
                         Texts.add({
                             title:$('#text-title').val(),
                             author:$('#text-author').val(),
-                            text:$('#main-text').val()
+                            text:$('#text-main').val()
                         });
 
                         Texts.at(Texts.length-1).save({},{
@@ -196,12 +211,32 @@
                                 Texts.fetch({success: function() { console.log('post save fetch success');}});
                             }
                         });
+                    },
+                    saveOldToServer: function() {
+                        console.log('saveOldToServer text');
+
+                        Texts.get(this.selectedId).set({
+                            title:$('#text-edit-title').val(),
+                            author:$('#text-edit-author').val(),
+                            text:$('#text-edit-main').val()
+                        });
+
+                        Texts.get(this.selectedId).save({},{
+                            success: function(model) { 
+                                console.log('text re-save success ' + model.id + ' ' + model.cid); 
+                                Texts.fetch({success: function() { console.log('text post re-save fetch success');}});
+                            }
+                        });
                     }
                 });
-                window.NewText = new NewTextView;
-                $('#new-text-form').submit(function(e) {
+                window.NewText = new NewTextView({ el: $('#text-section') });
+                $('#text-new-form').submit(function(e) {
                     e.preventDefault(); 
-                    window.NewText.saveToServer(); 
+                    window.NewText.saveNewToServer(); 
+                });
+                $('#text-edit-form').submit(function(e) {
+                    e.preventDefault(); 
+                    window.NewText.saveOldToServer(); 
                 });
 
 
@@ -220,7 +255,7 @@
                     addOne: function(model) {
                         console.log(model);
                         $('#images-articles-grid ul').append(
-                        '<li>'+model.get('title')+'<br/>'+model.get('author')+'</li>'
+                        '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="images-edit-button" id="images-edit-'+model.cid+'">edit</button><button type="button" class="images-view-button" id="images-view-'+model.cid+'">view</button></li>'
                         );
                     },
                     fileChange: function(ev) {
@@ -306,6 +341,9 @@
                 $('#videos-section').hide();
                 $('#music-section').hide();
 
+                $('#text-new-form').show();
+                $('#text-edit-form').hide();
+
                 $('#all-link').removeClass('bold');
                 $('#images-link').removeClass('bold');
                 $('#videos-link').removeClass('bold');
@@ -358,6 +396,10 @@
             }
 
         </script>
+
+        <script type="text/template" id="text-edit-template">
+        </script>
+
     </head>
 
     <body>
@@ -400,7 +442,7 @@
 
                     <div id="text-section" class="section">
 
-                        <form id="new-text-form" action="" method="post" class="">
+                        <form id="text-new-form" action="" method="post" class="">
                             <fieldset>
                                 <legend>new text form</legend>
 
@@ -419,15 +461,49 @@
                                 </div>
 
                                 <div>
-                                    <label for="main-text">new main text</label>
+                                    <label for="text-main">new main text</label>
                                     <div>
-                                        <textarea id="main-text" placeholder="main text" name="text" rows="20"></textarea>
+                                        <textarea id="text-main" placeholder="main text" name="text" rows="20"></textarea>
                                     </div>
                                 </div>
 
                                 <div>
                                     <div>
                                         <input type="submit" value="create new article"/>
+                                    </div>
+                                </div>
+
+                            </fieldset>
+                        </form>
+
+                        <form id="text-edit-form" action="" method="post" class="">
+                            <fieldset>
+                                <legend>edit text form</legend>
+
+                                <div>
+                                    <label for="text-edit-title">edit text title</label>
+                                    <div>
+                                        <input id="text-edit-title" type="text" placeholder="text title" name="title"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="text-edit-author">edit text author</label>
+                                    <div>
+                                        <input id="text-edit-author" type="text" placeholder="text author" name="author"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="text-edit-main">edit main text</label>
+                                    <div>
+                                        <textarea id="text-edit-main" placeholder="main text" name="text" rows="20"></textarea>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div>
+                                        <input type="submit" value="edit old article"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
