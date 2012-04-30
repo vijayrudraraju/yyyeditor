@@ -101,6 +101,13 @@ fieldset div {
     margin-left:auto;
     margin-right:auto;
 }
+.section iframe {
+    width: 960px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left:auto;
+    margin-right:auto;
+}
 .section-list {
     margin-top: 20px;
     margin-bottom: 20px;

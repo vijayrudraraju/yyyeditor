@@ -44,6 +44,13 @@ $(function(){
     window.Videos = new VideosCollection;
     window.Music = new MusicCollection;
 
+
+
+
+
+
+
+
     window.NewAllView = Backbone.View.extend({
         selectedId: 0,
         events: {
@@ -89,6 +96,13 @@ $(function(){
         },
     });
     window.NewAll = new NewAllView({ el: $('#all-section')  });;
+
+
+
+
+
+
+
 
     window.NewTextView = Backbone.View.extend({
         selectedId: 0,
@@ -203,6 +217,12 @@ $(function(){
         e.preventDefault(); 
         window.NewText.saveOldToServer(); 
     });
+
+
+
+
+
+
 
 
     window.NewImagesView = Backbone.View.extend({
@@ -458,8 +478,272 @@ $(function(){
         window.NewImages.saveOldToServer(); 
     });
 
+
+
+
+
+
+
+
+    window.NewVideosView = Backbone.View.extend({
+        selectedId: 0,
+        events: {
+            "click .videos-view-button": "viewOne",
+            "click .videos-edit-button": "editOne",
+            "click #videos-new-button": "newOne"
+        },
+        initialize: function() {
+            this.selectedId = 0;
+            Videos.on('reset', this.onReset, this);
+            Videos.fetch({success: function() { console.log('videos fetch success');}});
+        },
+        refresh: function() {
+            Videos.fetch({success: function() { console.log('vidoes refresh fetch success');}});
+        },
+        onReset: function(coll,resp) {
+            console.log('onReset text');
+
+            $('#videos-articles-grid ul').html('');
+            Videos.each(this.addOne);
+        },
+        viewOne: function(ev) {
+            console.log('viewOne ',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var model = Videos.getByCid(stringArray[2]);
+            console.log(model);
+
+            this.selectedId = model.id;
+
+            window.open('_show/videosArticle/'+this.selectedId);
+        },
+        newOne: function(ev) {
+            console.log('newOne ',ev,ev.target.id);
+
+            $('#videos-new-form').show();
+            $('#videos-edit-form').hide();
+            $('#videos-articles-grid').hide();
+        },
+        editOne: function(ev) {
+            console.log('editOne ',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var model = Videos.getByCid(stringArray[2]);
+            console.log(model);
+
+            this.selectedId = model.id;
+
+            $('#videos-new-form').hide();
+            $('#videos-edit-form').show();
+            $('#videos-articles-grid').hide();
+
+            $('#videos-edit-title').val(model.get('title'));
+            $('#videos-edit-author').val(model.get('author'));
+            $('#videos-edit-main').val(model.get('text'));
+            $('#videos-edit-form :hidden').val(model.get('_rev'));
+        },
+        addOne: function(model) {
+            console.log(model);
+            $('#videos-articles-grid ul').append(
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="videos-edit-button" id="videos-edit-'+model.cid+'">edit</button><button type="button" class="videos-view-button" id="videos-view-'+model.cid+'">view</button></li>'
+            );
+        },
+        saveNewToServer: function() {
+            console.log('videos saveNewToServer');
+
+            Videos.add({
+                title:$('#videos-new-title').val(),
+                author:$('#videos-new-author').val(),
+                videos:[$('#videos-new-code').val()]
+            });
+
+            Videos.at(Videos.length-1).save({},{
+                success: function() { 
+                    console.log('save success ' + Videos.at(Videos.length-1).id + ' ' + Videos.at(Videos.length-1).cid); 
+                    Videos.fetch({success: function() { console.log('post save fetch success');}});
+
+                    $('#videos-new-form').hide();
+                    $('#videos-edit-form').hide();
+                    $('#videos-articles-grid').show();
+                }
+            });
+        },
+        saveOldToServer: function() {
+            console.log('videos saveOldToServer');
+
+            Videos.get(this.selectedId).set({
+                title:$('#videos-edit-title').val(),
+                author:$('#videos-edit-author').val(),
+                videos:$('#videos-edit-code').val()
+            });
+
+            Videos.get(this.selectedId).save({},{
+                success: function(model) { 
+                    console.log('videos re-save success ' + model.id + ' ' + model.cid); 
+                    Videos.fetch({success: function() { console.log('videos post re-save fetch success');}});
+
+                    $('#videos-new-form').hide();
+                    $('#videos-edit-form').hide();
+                    $('#videos-articles-grid').show();
+                }
+            });
+        }
+    });
+    window.NewVideos = new NewVideosView({ el: $('#videos-section') });
+    $('#videos-new-form').submit(function(e) {
+        e.preventDefault(); 
+        window.NewVideos.saveNewToServer(); 
+    });
+    $('#videos-edit-form').submit(function(e) {
+        e.preventDefault(); 
+        window.NewVideos.saveOldToServer(); 
+    });
+
+
+
+
+
+
+
+
+
+
+    window.NewMusicView = Backbone.View.extend({
+        selectedId: 0,
+        events: {
+            "click .music-view-button": "viewOne",
+            "click .music-edit-button": "editOne",
+            "click #music-new-button": "newOne"
+        },
+        initialize: function() {
+            this.selectedId = 0;
+            Music.on('reset', this.onReset, this);
+            Music.fetch({success: function() { console.log('music fetch success');}});
+        },
+        refresh: function() {
+            Music.fetch({success: function() { console.log('music refresh fetch success');}});
+        },
+        onReset: function(coll,resp) {
+            console.log('music onReset');
+
+            $('#music-articles-grid ul').html('');
+            Music.each(this.addOne);
+        },
+        viewOne: function(ev) {
+            console.log('music viewOne ',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var model = Music.getByCid(stringArray[2]);
+            console.log(model);
+
+            this.selectedId = model.id;
+
+            window.open('_show/musicArticle/'+this.selectedId);
+        },
+        newOne: function(ev) {
+            console.log('music newOne ',ev,ev.target.id);
+
+            $('#music-new-form').show();
+            $('#music-edit-form').hide();
+            $('#music-articles-grid').hide();
+        },
+        editOne: function(ev) {
+            console.log('music editOne ',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var model = Music.getByCid(stringArray[2]);
+            console.log(model);
+
+            this.selectedId = model.id;
+
+            $('#music-new-form').hide();
+            $('#music-edit-form').show();
+            $('#music-articles-grid').hide();
+
+            $('#music-edit-title').val(model.get('title'));
+            $('#music-edit-author').val(model.get('author'));
+            $('#music-edit-main').val(model.get('text'));
+            $('#music-edit-form :hidden').val(model.get('_rev'));
+        },
+        addOne: function(model) {
+            console.log(model);
+            $('#music-articles-grid ul').append(
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="music-edit-button" id="music-edit-'+model.cid+'">edit</button><button type="button" class="music-view-button" id="music-view-'+model.cid+'">view</button></li>'
+            );
+        },
+        saveNewToServer: function() {
+            console.log('music saveNewToServer');
+
+            Music.add({
+                title:$('#music-new-title').val(),
+                author:$('#music-new-author').val(),
+                tracks:[$('#music-new-code').val()]
+            });
+
+            Music.at(Music.length-1).save({},{
+                success: function() { 
+                    console.log('music save success ' + Music.at(Music.length-1).id + ' ' + Music.at(Music.length-1).cid); 
+                    Music.fetch({success: function() { console.log('music post save fetch success');}});
+
+                    $('#music-new-form').hide();
+                    $('#music-edit-form').hide();
+                    $('#music-articles-grid').show();
+                }
+            });
+        },
+        saveOldToServer: function() {
+            console.log('music saveOldToServer');
+
+            Music.get(this.selectedId).set({
+                title:$('#music-edit-title').val(),
+                author:$('#music-edit-author').val(),
+                tracks:[$('#music-edit-code').val()]
+            });
+
+            Music.get(this.selectedId).save({},{
+                success: function(model) { 
+                    console.log('music re-save success ' + model.id + ' ' + model.cid); 
+                    Music.fetch({success: function() { console.log('music post re-save fetch success');}});
+
+                    $('#music-new-form').hide();
+                    $('#music-edit-form').hide();
+                    $('#music-articles-grid').show();
+                }
+            });
+        }
+    });
+    window.NewMusic = new NewMusicView({ el: $('#music-section') });
+    $('#music-new-form').submit(function(e) {
+        e.preventDefault(); 
+        window.NewMusic.saveNewToServer(); 
+    });
+    $('#music-edit-form').submit(function(e) {
+        e.preventDefault(); 
+        window.NewMusic.saveOldToServer(); 
+    });
+
+
+
+
+
+
+
+
+
+
+
+
     trigAll();
 });
+
+
+
+
+
+
+
+
+
 
 function trigAll() {
     window.NewAll.refresh();

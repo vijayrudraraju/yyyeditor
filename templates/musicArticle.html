@@ -31,10 +31,9 @@
                 </div>
 
                 <div class="section">
-                    {#filenames dbname=dbname id=id}
-                    <img class="fullscreen" src="/{dbname}/{id}/{.}"/>
-                    {/filenames}
-                    <p>{text}</p>
+                    {#tracks}
+                    {.|s}
+                    {/tracks}
                 </div>
 
             </div><!-- /content-->
