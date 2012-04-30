@@ -25,13 +25,32 @@ $(function(){
             view: "images" 
         }
     });
+    window.VideosCollection = Backbone.Collection.extend({ 
+        model: PageModel,
+        db: {
+            view: "videos" 
+        }
+    });
+    window.MusicCollection = Backbone.Collection.extend({ 
+        model: PageModel,
+        db: {
+            view: "music" 
+        }
+    });
 
     window.Pages = new PageCollection;
     window.Texts = new TextCollection;
     window.Images = new ImagesCollection;
+    window.Videos = new VideosCollection;
+    window.Music = new MusicCollection;
 
     window.NewAllView = Backbone.View.extend({
+        selectedId: 0,
+        events: {
+            "click .view-button": "viewOne",
+        },
         initialize: function() {
+            this.selectedId = 0;
             Pages.on('reset', this.onReset, this);
             Pages.fetch({success: function() { console.log('all fetch success');}});
         },
@@ -44,14 +63,32 @@ $(function(){
             $('#all-articles-grid ul').html('');
             Pages.each(this.addOne);
         },
+        viewOne: function(ev) {
+            console.log('viewOne ',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var model = Pages.getByCid(stringArray[1]);
+            console.log(model);
+
+            this.selectedId = model.id;
+
+            if (model.get('text'))
+                window.open('_show/textArticle/'+this.selectedId);
+            else if (model.get('filenames'))
+                window.open('_show/imagesArticle/'+this.selectedId);
+            else if (model.get('videos'))
+                window.open('_show/videosArticle/'+this.selectedId);
+            else if (model.get('tracks'))
+                window.open('_show/tracksArticle/'+this.selectedId);
+        },
         addOne: function(model) {
             console.log(model);
             $('#all-articles-grid ul').append(
-                '<li>'+model.get('title')+'<br/>'+model.get('author')+'</li>'
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="view-button" id="view-'+model.cid+'">view</button></li>'
             );
         },
     });
-    window.NewAll = new NewAllView;
+    window.NewAll = new NewAllView({ el: $('#all-section')  });;
 
     window.NewTextView = Backbone.View.extend({
         selectedId: 0,
@@ -494,6 +531,10 @@ function trigVideos() {
     $('#videos-section').show();
     $('#music-section').hide();
 
+    $('#videos-new-form').hide();
+    $('#videos-edit-form').hide();
+    $('#videos-articles-grid').show();
+
     $('#all-link').removeClass('bold');
     $('#text-link').removeClass('bold');
     $('#images-link').removeClass('bold');
@@ -508,6 +549,10 @@ function trigMusic() {
     $('#images-section').hide();
     $('#videos-section').hide();
     $('#music-section').show();
+
+    $('#music-new-form').hide();
+    $('#music-edit-form').hide();
+    $('#music-articles-grid').show();
 
     $('#all-link').removeClass('bold');
     $('#text-link').removeClass('bold');

@@ -3,16 +3,16 @@
     "version": "0.0.1",
     "description": "editor interface for yyy",
     "attachments": ["index.html","script","style"],
-    "handlebars": {
-        "all_partials": false,
-        "templates": "templates"
-    },
+    "duality": { "base_template": "base.html" },
+    "dust": { "templates": "templates" },
     "modules": ["lib"],
     "load": "lib/app",
     "dependencies": {
         "attachments": null,
         "modules": null,
         "properties": null,
-        "handlebars": null
+        "dust": null,
+        "duality": null,
+        "duality-dust": null
     }
 }

@@ -1,8 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>YESYESYES - {{title}}</title>
+        <title>YESYESYES - {title}</title>
         <meta name="description" content="page for editing yesyesyes">
         <meta name="programmer" content="vijay rudraraju">
 
@@ -28,15 +26,12 @@
                 </div>
 
                 <div class="section-header">
-                    <h2>{{title}}</h2>
-                    <h2>{{author}}</h2>
+                    <h2>{title}</h2>
+                    <h2>{author}</h2>
                 </div>
 
                 <div class="section">
-                    {{#each filenames}}
-                    <img class="fullscreen" src="/{{../dbname}}/{{../id}}/{{this}}"/>
-                    {{/each}}
-                    <p>{{text}}</p>
+                    <p>{text}</p>
                 </div>
 
             </div><!-- /content-->
@@ -44,5 +39,3 @@
         </div> <!-- /container -->
 
     </body>
-</html>
-
