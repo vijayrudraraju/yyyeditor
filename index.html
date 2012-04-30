@@ -93,10 +93,15 @@
                 margin-bottom: 20px;
             }
 
+            .thumbnail {
+                width: 90px;
+                height: 90px;
+            }
+
         </style>
 
         <script type="text/javascript" src="/_utils/script/json2.js"></script>
-        <script type="text/javascript" src="script/jquery.js"></script>
+        <script type="text/javascript" src="/_utils/script/jquery.js"></script>
         <script type="text/javascript" src="/_utils/script/jquery.couch.js"></script>
         <script type="text/javascript" src="script/underscore.js"></script>
         <script type="text/javascript" src="script/backbone.js"></script>
@@ -107,7 +112,8 @@
             $(function(){
                 trigAll();
 
-                Backbone.couch_connector.config.db_name = "yyy";
+                var _DBNAME = 'yyy';
+                Backbone.couch_connector.config.db_name = _DBNAME;
                 Backbone.couch_connector.config.ddoc_name = "edit";
 
                 window.PageModel= Backbone.Model.extend({
@@ -142,6 +148,9 @@
                         Pages.on('reset', this.onReset, this);
                         Pages.fetch({success: function() { console.log('all fetch success');}});
                     },
+                    refresh: function() {
+                        Pages.fetch({success: function() { console.log('all refresh fetch success');}});
+                    },
                     onReset: function(coll,resp) {
                         console.log('onReset all');
 
@@ -160,17 +169,41 @@
                 window.NewTextView = Backbone.View.extend({
                     selectedId: 0,
                     events: {
-                        "click .text-edit-button": "editOne"
+                        "click .text-view-button": "viewOne",
+                        "click .text-edit-button": "editOne",
+                        "click #text-new-button": "newOne"
                     },
                     initialize: function() {
+                        this.selectedId = 0;
                         Texts.on('reset', this.onReset, this);
                         Texts.fetch({success: function() { console.log('text fetch success');}});
+                    },
+                    refresh: function() {
+                        Texts.fetch({success: function() { console.log('text refresh fetch success');}});
                     },
                     onReset: function(coll,resp) {
                         console.log('onReset text');
 
                         $('#text-articles-grid ul').html('');
                         Texts.each(this.addOne);
+                    },
+                    viewOne: function(ev) {
+                        console.log('viewOne ',ev,ev.target.id);
+
+                        var stringArray = ev.target.id.split('-');
+                        var model = Texts.getByCid(stringArray[2]);
+                        console.log(model);
+
+                        this.selectedId = model.id;
+
+                        window.open('_show/textArticle/'+this.selectedId);
+                    },
+                    newOne: function(ev) {
+                        console.log('newOne ',ev,ev.target.id);
+
+                        $('#text-new-form').show();
+                        $('#text-edit-form').hide();
+                        $('#text-articles-grid').hide();
                     },
                     editOne: function(ev) {
                         console.log('editOne ',ev,ev.target.id);
@@ -209,6 +242,10 @@
                             success: function() { 
                                 console.log('save success ' + Texts.at(Texts.length-1).id + ' ' + Texts.at(Texts.length-1).cid); 
                                 Texts.fetch({success: function() { console.log('post save fetch success');}});
+
+                                $('#text-new-form').hide();
+                                $('#text-edit-form').hide();
+                                $('#text-articles-grid').show();
                             }
                         });
                     },
@@ -225,6 +262,10 @@
                             success: function(model) { 
                                 console.log('text re-save success ' + model.id + ' ' + model.cid); 
                                 Texts.fetch({success: function() { console.log('text post re-save fetch success');}});
+
+                                $('#text-new-form').hide();
+                                $('#text-edit-form').hide();
+                                $('#text-articles-grid').show();
                             }
                         });
                     }
@@ -240,17 +281,65 @@
                 });
 
 
-                window.NewImageView = Backbone.View.extend({
+                window.NewImagesView = Backbone.View.extend({
+                    events: {
+                        "change #images-main": "fileChange",
+                        "click .images-view-button": "viewOne",
+                        "click .images-edit-button": "editOne",
+                        "click #images-new-button": "newOne"
+                    },
                     initialize: function() {
-                        $('#main-images').change(this.fileChange);
+                        console.log(this);
+                        var self = this;
+                        self.selectedId = -1;
+                        self.fileNames = [];
+                        //$('#images-main').change(this.fileChange);
                         Images.on('reset', this.onReset, this);
                         Images.fetch({success: function() { console.log('images fetch success');}});
                     },
+                    refresh: function() {
+                        Images.fetch({success: function() { console.log('images refresh fetch success');}});
+                    },
                     onReset: function(coll,resp) {
-                        console.log('onReset images');
+                        console.log('images onReset');
 
                         $('#images-articles-grid ul').html('');
                         Images.each(this.addOne);
+                    },
+                    viewOne: function(ev) {
+                        console.log('viewOne ',ev,ev.target.id);
+
+                        var stringArray = ev.target.id.split('-');
+                        var model = Images.getByCid(stringArray[2]);
+                        console.log(model);
+
+                        this.selectedId = model.id;
+
+                        window.open('_show/imagesArticle/'+this.selectedId);
+                    },
+                    newOne: function(ev) {
+                        console.log('newOne ',ev,ev.target.id);
+
+                        $('#images-new-form').show();
+                        $('#images-edit-form').hide();
+                        $('#images-articles-grid').hide();
+                    },
+                    editOne: function(ev) {
+                        console.log('editOne ',ev,ev.target.id);
+
+                        var stringArray = ev.target.id.split('-');
+                        var model = Images.getByCid(stringArray[2]);
+                        console.log(model);
+
+                        this.selectedId = model.id;
+
+                        $('#images-new-form').hide();
+                        $('#images-edit-form').show();
+                        $('#images-articles-grid').hide();
+                        
+                        $('#images-edit-title').val(model.get('title'));
+                        $('#images-edit-author').val(model.get('author'));
+                        $('#images-edit-form :hidden').val(model.get('_rev'));
                     },
                     addOne: function(model) {
                         console.log(model);
@@ -259,64 +348,116 @@
                         );
                     },
                     fileChange: function(ev) {
-                        var fileNames = [];
+                        console.log('images fileChange');
+                        var self = this;
+                        self.fileNames = [];
                         var data = {};
                         var i = 0;
-                        $('#new-images-form :file').each(function() {
+                        $('#images-new-form :file').each(function() {
                             data[this.name] = this.value;
                             var stringArray = this.value.split("\\");
-                            fileNames[i] = stringArray[stringArray.length-1];
+                            self.fileNames[i] = stringArray[stringArray.length-1];
+                            console.log(stringArray[stringArray.length-1]);
                             i++;
                         });
                         if (!data._attachments || data._attachments.length == 0) {
                             alert('Please some images from your computer for the author');
                             return;
                         }
-                        for (var i=0;i<fileNames.length;i++) {
-                            $('#image-files').append('<li>'+fileNames[i]+'</li>');
+                        for (var i=0;i<self.fileNames.length;i++) {
+                            $('#image-files').append('<li>'+self.fileNames[i]+'</li>');
                         }
                     },
-                    saveToServer: function() {
-                        console.log('saveToServer images');
+                    saveNewToServer: function() {
+                        var self = this;
+                        console.log('images saveNewToServer', self.fileNames);
 
                         Images.add({
                             title:$('#images-title').val(),
                             author:$('#images-author').val(),
-                            images:$('#main-images').val(),
-                            filenames:fileNames
+                            filenames:self.fileNames
                         });
 
                         Images.at(Images.length-1).save({},{
                             success: function() { 
                                 console.log('save success ' + Images.at(Images.length-1).id + ' ' + Images.at(Images.length-1).cid); 
-                                $('#new-images-form :hidden').val(Images.at(Images.length-1).get('_rev'));
-                                $('#new-images-form').ajaxSubmit({
+                                $('#images-new-form :hidden').val(Images.at(Images.length-1).get('_rev'));
+                                $('#images-new-form').ajaxSubmit({
                                     url: '/yyy/'+Images.at(Images.length-1).id,
                                     type: 'post',
                                     dataType: 'json',
                                     success: function(data) {
                                         console.log('banner logo upload success!');
                                         console.log(data);
+
+                                        Images.fetch({
+                                            success: function() { 
+                                                console.log('post save fetch success');
+
+                                                $('#images-new-form').hide();
+                                                $('#images-edit-form').hide();
+                                                $('#images-articles-grid').show();
+                                            }
+                                        });
                                     },
                                     error: function(data) {
                                         console.log('banner logo upload error!');
                                     }
                                 });
-                                Images.fetch({success: function() { console.log('post save fetch success');}});
                             }
                         });
+                    },
+                    saveOldToServer: function() {
+
+                        var id = this.selectedId;
+                        Images.get(id).save({},{
+                            success: function() { 
+                                console.log('save success ' + Images.get(id).id + ' ' + Images.get(id).cid); 
+                                $('#images-edit-form :hidden').val(Images.get(id).get('_rev'));
+                                $('#images-edit-form').ajaxSubmit({
+                                    url: '/yyy/'+id,
+                                    type: 'post',
+                                    dataType: 'json',
+                                    success: function(data) {
+                                        console.log('banner logo upload success!');
+                                        console.log(data);
+
+                                        Images.fetch({
+                                            success: function() { 
+                                                console.log('post save fetch success');
+
+                                                $('#images-new-form').hide();
+                                                $('#images-edit-form').hide();
+                                                $('#images-articles-grid').show();
+                                            }
+                                        });
+                                    },
+                                    error: function(data) {
+                                        console.log('banner logo upload error!');
+                                    }
+                                });
+                            }
+                        });
+
                     }
                 });
-                window.NewImage = new NewImageView;
-                $('#new-images-form').submit(function(e) {
+                window.NewImages = new NewImagesView({ el: $('#images-section') });
+                $('#images-new-form').submit(function(e) {
                     e.preventDefault(); 
-                    window.NewImage.saveToServer(); 
+                    window.NewImages.saveNewToServer(); 
+                });
+                $('#images-edit-form').submit(function(e) {
+                    console.log('resaving...');
+                    e.preventDefault(); 
+                    window.NewImages.saveOldToServer(); 
                 });
 
 
             });
 
             function trigAll() {
+                Pages.refresh();
+
                 $('.section-header h2').html('all');
                 $('#all-link').addClass('bold');
 
@@ -332,6 +473,8 @@
                 $('#music-link').removeClass('bold');
             }
             function trigText() {
+                Texts.refresh();
+
                 $('.section-header h2').html('text');
                 $('#text-link').addClass('bold');
 
@@ -341,15 +484,19 @@
                 $('#videos-section').hide();
                 $('#music-section').hide();
 
-                $('#text-new-form').show();
+                $('#text-new-form').hide();
                 $('#text-edit-form').hide();
+                $('#text-articles-grid').show();
 
                 $('#all-link').removeClass('bold');
                 $('#images-link').removeClass('bold');
                 $('#videos-link').removeClass('bold');
                 $('#music-link').removeClass('bold');
+
             }
             function trigImages() {
+                Images.refresh();
+
                 $('.section-header h2').html('images');
                 $('#images-link').addClass('bold');
 
@@ -358,6 +505,10 @@
                 $('#images-section').show();
                 $('#videos-section').hide();
                 $('#music-section').hide();
+
+                $('#images-new-form').hide();
+                $('#images-edit-form').hide();
+                $('#images-articles-grid').show();
 
                 $('#all-link').removeClass('bold');
                 $('#text-link').removeClass('bold');
@@ -442,7 +593,7 @@
 
                     <div id="text-section" class="section">
 
-                        <form id="text-new-form" action="" method="post" class="">
+                        <form id="text-new-form" class="subsection">
                             <fieldset>
                                 <legend>new text form</legend>
 
@@ -476,7 +627,7 @@
                             </fieldset>
                         </form>
 
-                        <form id="text-edit-form" action="" method="post" class="">
+                        <form id="text-edit-form" class="subsection">
                             <fieldset>
                                 <legend>edit text form</legend>
 
@@ -512,6 +663,7 @@
                         </form>
 
                         <div id="text-articles-grid" class="section-list">
+                            <button type="button" id="text-new-button">new text article</button>
                             <ul>
                             </ul>
                         </div>
@@ -522,7 +674,7 @@
 
                     <div id="images-section" class="section">
 
-                        <form id="new-images-form" action="" method="post" class="">
+                        <form id="images-new-form" action="" method="post" class="">
                             <fieldset>
                                 <legend>new images form</legend>
 
@@ -536,14 +688,14 @@
                                 <div>
                                     <label for="images-author">new images author</label>
                                     <div>
-                                        <input id="images-author" type="text" placeholder="text author"/>
+                                        <input id="images-author" type="text" placeholder="images author"/>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label for="main-images">new main images</label>
+                                    <label for="images-main">new main images</label>
                                     <div>
-                                        <input type="file" id="main-images" name="_attachments" multiple=""/>
+                                        <input type="file" id="images-main" name="_attachments" multiple=""/>
                                         <ul id="image-files">
                                         </ul>
                                     </div>
@@ -559,7 +711,45 @@
                             </fieldset>
                         </form>
 
+                        <form id="images-edit-form" class="subsection">
+                            <fieldset>
+                                <legend>edit images form</legend>
+
+                                <div>
+                                    <label for="images-edit-title">edit images title</label>
+                                    <div>
+                                        <input id="images-edit-title" type="text" placeholder="images title" name="title"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="images-edit-author">edit text author</label>
+                                    <div>
+                                        <input id="images-edit-author" type="text" placeholder="images author" name="author"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="images-edit-main">new main images</label>
+                                    <div>
+                                        <input type="file" id="images-edit-main" name="_attachments" multiple=""/>
+                                        <ul id="image-edit-files">
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div>
+                                        <input type="submit" value="edit old article"/>
+                                        <input type="hidden" name="_rev"/>
+                                    </div>
+                                </div>
+
+                            </fieldset>
+                        </form>
+
                         <div id="images-articles-grid" class="section-list">
+                            <button type="button" id="images-new-button">new images article</button>
                             <ul>
                             </ul>
                         </div>
