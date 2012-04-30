@@ -110,8 +110,6 @@
 
         <script>
             $(function(){
-                trigAll();
-
                 var _DBNAME = 'yyy';
                 Backbone.couch_connector.config.db_name = _DBNAME;
                 Backbone.couch_connector.config.ddoc_name = "edit";
@@ -284,15 +282,18 @@
                 window.NewImagesView = Backbone.View.extend({
                     events: {
                         "change #images-main": "fileChange",
+                        "change #images-edit-main": "fileChangeEdit",
                         "click .images-view-button": "viewOne",
                         "click .images-edit-button": "editOne",
-                        "click #images-new-button": "newOne"
+                        "click #images-new-button": "newOne",
+                        "click .images-delete-button": "deleteImage"
                     },
                     initialize: function() {
                         console.log(this);
                         var self = this;
                         self.selectedId = -1;
                         self.fileNames = [];
+                        self.selectedModel = {};
                         //$('#images-main').change(this.fileChange);
                         Images.on('reset', this.onReset, this);
                         Images.fetch({success: function() { console.log('images fetch success');}});
@@ -320,6 +321,11 @@
                     newOne: function(ev) {
                         console.log('newOne ',ev,ev.target.id);
 
+                        $('#images-title').val('');
+                        $('#images-author').val('');
+                        $('#images-main').parent().html($('#images-main').parent().html());
+                        $('#images-files').html('');
+
                         $('#images-new-form').show();
                         $('#images-edit-form').hide();
                         $('#images-articles-grid').hide();
@@ -331,6 +337,7 @@
                         var model = Images.getByCid(stringArray[2]);
                         console.log(model);
 
+                        this.selectedModel = model;
                         this.selectedId = model.id;
 
                         $('#images-new-form').hide();
@@ -340,6 +347,16 @@
                         $('#images-edit-title').val(model.get('title'));
                         $('#images-edit-author').val(model.get('author'));
                         $('#images-edit-form :hidden').val(model.get('_rev'));
+
+                        var filenames = model.get('filenames');
+
+                        $('#images-edit-main').parent().html($('#images-edit-main').parent().html());
+                        $('#images-edit-files').html('');
+                        for (var i=0;i<filenames.length;i++) {
+                            $('#images-edit-files').append('<li>'+filenames[i]+'</li>');
+                            $('#images-edit-files').append('<img class="thumbnail" src="/'+_DBNAME+'/'+model.id+'/'+filenames[i]+'" alt="image"><br/>');
+                            $('#images-edit-files').append('<button type="button" class="images-delete-button" id="images-delete-'+model.cid+'-'+i+'">delete</button>');
+                        }
                     },
                     addOne: function(model) {
                         console.log(model);
@@ -347,25 +364,77 @@
                         '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="images-edit-button" id="images-edit-'+model.cid+'">edit</button><button type="button" class="images-view-button" id="images-view-'+model.cid+'">view</button></li>'
                         );
                     },
+                    deleteImage: function(ev) {
+                        console.log('delete image',ev,ev.target.id);
+
+                        var stringArray = ev.target.id.split('-');
+                        var model = Images.getByCid(stringArray[2]);
+                        var imageIndex = stringArray[3];
+                        var stubs = model.get('_attachments');
+                        var filenames = model.get('filenames');
+                        var name = filenames.splice(imageIndex,1);
+                        delete stubs[name]; 
+
+                        model.set({
+                            _attachments:stubs,
+                            filenames:filenames
+                        });
+
+                        $('#images-edit-files').html('');
+                        for (var i=0;i<self.fileNames.length;i++) {
+                            $('#images-edit-files').append('<li>'+self.fileNames[i]+'</li>');
+                        }
+                        var files = self.selectedModel.get('filenames');
+                        for (var i=0;i<files.length;i++) {
+                            $('#images-edit-files').append('<li>'+files[i]+'</li>');
+                            $('#images-edit-files').append('<img class="thumbnail" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+files[i]+'" alt="image">');
+                        }
+                    },
                     fileChange: function(ev) {
                         console.log('images fileChange');
                         var self = this;
                         self.fileNames = [];
                         var data = {};
                         var i = 0;
-                        $('#images-new-form :file').each(function() {
-                            data[this.name] = this.value;
-                            var stringArray = this.value.split("\\");
-                            self.fileNames[i] = stringArray[stringArray.length-1];
-                            console.log(stringArray[stringArray.length-1]);
-                            i++;
-                        });
-                        if (!data._attachments || data._attachments.length == 0) {
+                        var files = $('#images-new-form :file')[0].files;
+                        for (var i=0;i<files.length;i++) {
+                            self.fileNames[i] = files[i].name;
+                            console.log(self.fileNames[i]);
+                        }
+                        if (!self.fileNames || self.fileNames.length == 0) {
                             alert('Please some images from your computer for the author');
                             return;
                         }
+
+                        $('#images-files').html('');
                         for (var i=0;i<self.fileNames.length;i++) {
-                            $('#image-files').append('<li>'+self.fileNames[i]+'</li>');
+                            $('#images-files').append('<li>'+self.fileNames[i]+'</li>');
+                        }
+                    },
+                    fileChangeEdit: function(ev) {
+                        console.log('images edit fileChange');
+                        var self = this;
+                        self.fileNames = [];
+                        var data = {};
+                        var i = 0;
+                        var files = $('#images-edit-form :file')[0].files;
+                        for (var i=0;i<files.length;i++) {
+                            self.fileNames[i] = files[i].name;
+                            console.log(self.fileNames[i]);
+                        }
+                        if (!self.fileNames || self.fileNames.length == 0) {
+                            alert('Please some images from your computer for the author');
+                            return;
+                        }
+
+                        $('#images-edit-files').html('');
+                        for (var i=0;i<self.fileNames.length;i++) {
+                            $('#images-edit-files').append('<li>'+self.fileNames[i]+'</li>');
+                        }
+                        var files = self.selectedModel.get('filenames');
+                        for (var i=0;i<files.length;i++) {
+                            $('#images-edit-files').append('<li>'+files[i]+'</li>');
+                            $('#images-edit-files').append('<img class="thumbnail" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+files[i]+'" alt="image">');
                         }
                     },
                     saveNewToServer: function() {
@@ -408,8 +477,19 @@
                         });
                     },
                     saveOldToServer: function() {
-
+                        var self = this;
                         var id = this.selectedId;
+
+                        var filenames = Images.get(this.selectedId).get('filenames');
+                        console.log('old filenames',filenames);
+                        console.log('new filenames',self.fileNames);
+                        filenames = filenames.concat(self.fileNames);
+                        console.log('combined filenames',filenames);
+
+                        Images.get(this.selectedId).set({
+                            filenames:filenames
+                        });
+
                         Images.get(id).save({},{
                             success: function() { 
                                 console.log('save success ' + Images.get(id).id + ' ' + Images.get(id).cid); 
@@ -452,11 +532,11 @@
                     window.NewImages.saveOldToServer(); 
                 });
 
-
+                trigAll();
             });
 
             function trigAll() {
-                Pages.refresh();
+                window.NewAll.refresh();
 
                 $('.section-header h2').html('all');
                 $('#all-link').addClass('bold');
@@ -473,7 +553,7 @@
                 $('#music-link').removeClass('bold');
             }
             function trigText() {
-                Texts.refresh();
+                window.NewText.refresh();
 
                 $('.section-header h2').html('text');
                 $('#text-link').addClass('bold');
@@ -495,7 +575,7 @@
 
             }
             function trigImages() {
-                Images.refresh();
+                window.NewImages.refresh();
 
                 $('.section-header h2').html('images');
                 $('#images-link').addClass('bold');
@@ -696,7 +776,7 @@
                                     <label for="images-main">new main images</label>
                                     <div>
                                         <input type="file" id="images-main" name="_attachments" multiple=""/>
-                                        <ul id="image-files">
+                                        <ul id="images-files">
                                         </ul>
                                     </div>
                                 </div>
@@ -733,7 +813,7 @@
                                     <label for="images-edit-main">new main images</label>
                                     <div>
                                         <input type="file" id="images-edit-main" name="_attachments" multiple=""/>
-                                        <ul id="image-edit-files">
+                                        <ul id="images-edit-files">
                                         </ul>
                                     </div>
                                 </div>
