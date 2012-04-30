@@ -86,7 +86,7 @@ $(function(){
             else if (model.get('videos'))
                 window.open('_show/videosArticle/'+this.selectedId);
             else if (model.get('tracks'))
-                window.open('_show/tracksArticle/'+this.selectedId);
+                window.open('_show/musicArticle/'+this.selectedId);
         },
         addOne: function(model) {
             console.log(model);
