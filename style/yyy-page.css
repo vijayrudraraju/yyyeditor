@@ -1,0 +1,107 @@
+html {
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+body {
+    position: relative;
+    top: 0px;
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+h1 {
+    text-align: center;
+    font-size: 120px;
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+h2 {
+    text-align: center;
+    font-size: 25px;
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+a {
+    color: black;
+    font-size: 20px;
+}
+a:hover {
+    color: gray;
+}
+textarea {
+    width: 100%;
+}
+input[type=text] {
+    width: 400px;
+}
+li {
+    margin: 10px;
+}
+fieldset div {
+    padding: 10px;
+}
+
+
+.bold {
+    font-weight: bold;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+}
+
+.tabs {
+    width: 960px;
+    height: 70px;
+    margin: 20px;
+}
+.tab {
+    margin-right: 5px;
+    padding: 20px;
+    float: left;
+    border-left-style: solid;
+    border-top-style: solid;
+    border-color: black;
+    border-width: 1px;
+}
+
+.fullscreen {
+    width: 960px;
+}
+.thumbnail {
+    width: 90px;
+    height: 90px;
+        }
+
+.page-header {
+    width: 960px;
+    padding: 5px;
+    margin-top: 5px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-header {
+    width: 960px;
+    height: 80px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section {
+    width: 960px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left:auto;
+    margin-right:auto;
+}
+.section-list {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
