@@ -226,6 +226,9 @@ $(function(){
 
 
     window.NewImagesView = Backbone.View.extend({
+        selectedId: 0,
+        fileNames: [],
+        selectedModel: {},
         events: {
             "change #images-new-main": "fileChange",
             "change #images-edit-main": "fileChangeEdit",
@@ -487,10 +490,13 @@ $(function(){
 
     window.NewVideosView = Backbone.View.extend({
         selectedId: 0,
+        videoCodes: [],
         events: {
             "click .videos-view-button": "viewOne",
             "click .videos-edit-button": "editOne",
-            "click #videos-new-button": "newOne"
+            "click #videos-new-button": "newOne",
+            "click .videos-add-button": "addVideo",
+            "click .videos-delete-button": "deleteVideo"
         },
         initialize: function() {
             this.selectedId = 0;
@@ -539,8 +545,15 @@ $(function(){
 
             $('#videos-edit-title').val(model.get('title'));
             $('#videos-edit-author').val(model.get('author'));
-            $('#videos-edit-main').val(model.get('text'));
             $('#videos-edit-form :hidden').val(model.get('_rev'));
+
+            var codes = model.get('videos');
+
+            $('#videos-edit-codes').html('');
+            for (var i=0;i<codes.length;i++) {
+                $('#videos-edit-codes').append('<li>'+codes[i]+'</li>');
+                $('#videos-edit-codes').append('<button type="button" class="videos-delete-button" id="videos-delete-'+model.cid+'-'+i+'">delete</button>');
+            }
         },
         addOne: function(model) {
             console.log(model);
@@ -548,13 +561,39 @@ $(function(){
                 '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="videos-edit-button" id="videos-edit-'+model.cid+'">edit</button><button type="button" class="videos-view-button" id="videos-view-'+model.cid+'">view</button></li>'
             );
         },
+        addVideo: function() {
+            console.log('videos addVideo');
+            var self = this;
+
+            self.videoCodes.push($('#videos-new-code').val());
+
+            $('#videos-new-codes').html('');
+            for (var i=0;i<self.videoCodes.length;i++) {
+                $('#videos-new-codes').append('<li>'+self.videoCodes[i]+'</li>');
+            }
+        },
+        deleteVideo: function() {
+            var self = this;
+            console.log('delete video',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var imageIndex = stringArray[3];
+            var name = self.videoCodes.splice(imageIndex,1);
+
+
+            $('#videos-new-codes').html('');
+            for (var i=0;i<self.videoCodes.length;i++) {
+                $('#videos-new-codes').append('<li>'+self.videoCodes[i]+'</li>');
+            }
+        },
         saveNewToServer: function() {
             console.log('videos saveNewToServer');
 
+            var self = this;
             Videos.add({
                 title:$('#videos-new-title').val(),
                 author:$('#videos-new-author').val(),
-                videos:[$('#videos-new-code').val()]
+                videos:self.videoCodes
             });
 
             Videos.at(Videos.length-1).save({},{
@@ -574,7 +613,7 @@ $(function(){
             Videos.get(this.selectedId).set({
                 title:$('#videos-edit-title').val(),
                 author:$('#videos-edit-author').val(),
-                videos:$('#videos-edit-code').val()
+                videos:self.videoCodes
             });
 
             Videos.get(this.selectedId).save({},{

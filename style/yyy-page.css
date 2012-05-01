@@ -24,6 +24,12 @@ h2 {
     padding: 0px;
     border: 0px;
 }
+button, input.submit, input.button {
+    font-size: 20px;
+    border: 1px outset blue;
+    background-color: lightBlue;
+    margin: 10px;
+}
 a {
     color: black;
     font-size: 20px;
@@ -36,6 +42,12 @@ textarea {
 }
 input[type=text] {
     width: 400px;
+}
+ul {
+    list-style-type: square;
+    border-top-style: solid;
+    border-color: black;
+    border-width: 1px;
 }
 li {
     margin: 10px;
@@ -58,6 +70,7 @@ fieldset div {
     width: 960px;
     height: 70px;
     margin: 20px;
+    margin-top: 40px;
 }
 .tab {
     margin-right: 5px;
@@ -92,6 +105,9 @@ fieldset div {
     margin-bottom: 30px;
     margin-left: auto;
     margin-right: auto;
+    border-bottom-style: solid;
+    border-color: black;
+    border-width: 1px;
 }
 
 .section {
@@ -109,6 +125,6 @@ fieldset div {
     margin-right:auto;
 }
 .section-list {
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 30px;
+    margin-bottom: 30px;
 }

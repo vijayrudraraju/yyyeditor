@@ -93,7 +93,7 @@
 
                                 <div>
                                     <div>
-                                        <input type="submit" value="create new article"/>
+                                        <input type="submit" class="submit" value="create new article"/>
                                     </div>
                                 </div>
 
@@ -127,7 +127,7 @@
 
                                 <div>
                                     <div>
-                                        <input type="submit" value="edit old article"/>
+                                        <input type="submit" class="submit" value="edit old article"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
@@ -135,9 +135,9 @@
                             </fieldset>
                         </form>
 
-                        <div id="text-articles-grid" class="section-list">
+                        <div id="text-articles-grid"> 
                             <button type="button" id="text-new-button">new text article</button>
-                            <ul>
+                            <ul class="section-list">
                             </ul>
                         </div>
 
@@ -176,7 +176,7 @@
 
                                 <div>
                                     <div>
-                                        <input type="submit" value="create new article"/>
+                                        <input type="submit" class="submit" value="create new article"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
@@ -213,7 +213,7 @@
 
                                 <div>
                                     <div>
-                                        <input type="submit" value="edit old article"/>
+                                        <input type="submit" class="submit" value="edit old article"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
@@ -221,9 +221,9 @@
                             </fieldset>
                         </form>
 
-                        <div id="images-articles-grid" class="section-list">
+                        <div id="images-articles-grid">
                             <button type="button" id="images-new-button">new images article</button>
-                            <ul>
+                            <ul class="section-list">
                             </ul>
                         </div>
 
@@ -252,15 +252,18 @@
                                 </div>
 
                                 <div>
-                                    <label for="videos-new-code">new videos code</label>
+                                    <label for="videos-new-code">new videos embed code</label>
                                     <div>
                                         <input id="videos-new-code" type="text" placeholder="videos code" name="video"/>
+                                        <button type="button" class="videos-add-button" id="videos-add">add video</button>
+                                        <ul id="videos-new-codes">
+                                        </ul>
                                     </div>
                                 </div>
 
                                 <div>
                                     <div>
-                                        <input type="submit" value="create new article"/>
+                                        <input type="submit" class="submit" value="create new article"/>
                                     </div>
                                 </div>
 
@@ -286,24 +289,27 @@
                                 </div>
 
                                 <div>
-                                    <label for="videos-edit-code">edit video code</label>
+                                    <label for="videos-edit-code">edit video embed code</label>
                                     <div>
                                         <input id="videos-edit-code" type="text" placeholder="videos code" name="video"/>
+                                        <button type="button" class="videos-add-button" id="videos-add">add video</button>
+                                        <ul id="videos-edit-codes">
+                                        </ul>
                                     </div>
                                 </div>
 
                                 <div>
                                     <div>
-                                        <input type="submit" value="create edit article"/>
+                                        <input type="submit" class="submit" value="create edit article"/>
                                     </div>
                                 </div>
 
                             </fieldset>
                         </form>
 
-                        <div id="videos-articles-grid" class="section-list">
+                        <div id="videos-articles-grid">
                             <button type="button" id="videos-new-button">new videos article</button>
-                            <ul>
+                            <ul class="section-list">
                             </ul>
                         </div>
 
@@ -332,7 +338,7 @@
                                 </div>
 
                                 <div>
-                                    <label for="music-new-code">new music code</label>
+                                    <label for="music-new-code">new music embed code</label>
                                     <div>
                                         <input id="music-new-code" type="text" placeholder="music code" name="music"/>
                                     </div>
@@ -340,7 +346,7 @@
 
                                 <div>
                                     <div>
-                                        <input type="submit" value="create new article"/>
+                                        <input type="submit" class="submit" value="create new article"/>
                                     </div>
                                 </div>
 
@@ -366,7 +372,7 @@
                                 </div>
 
                                 <div>
-                                    <label for="music-edit-code">edit main code</label>
+                                    <label for="music-edit-code">edit music embed code</label>
                                     <div>
                                         <input id="music-edit-code" type="text" placeholder="music code" name="video"/>
                                     </div>
@@ -374,16 +380,16 @@
 
                                 <div>
                                     <div>
-                                        <input type="submit" value="create edit article"/>
+                                        <input type="submit" class="submit" value="create edit article"/>
                                     </div>
                                 </div>
 
                             </fieldset>
                         </form>
 
-                        <div id="music-articles-grid" class="section-list">
+                        <div id="music-articles-grid">
                             <button type="button" id="music-new-button">new music article</button>
-                            <ul>
+                            <ul class="section-list">
                             </ul>
                         </div>
 
