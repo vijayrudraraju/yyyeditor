@@ -64,6 +64,7 @@ $(function(){
         events: {
             "click .view-button": "viewOne",
             "click .edit-button": "editOne",
+            "click .all-new-button": "newOne"
         },
         initialize: function() {
             this.selectedId = 0;
@@ -79,6 +80,27 @@ $(function(){
 
             $('#all-articles-grid ul').html('');
             Pages.each(this.addOne);
+        },
+        newOne: function(ev) {
+            console.log('all newOne ',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var type = stringArray[0];
+            console.log(type);
+
+            if (type === 'text') {
+                trigText();
+                window.NewText.newOne(ev);
+            } else if (type === 'images') {
+                trigImages();
+                window.NewImages.newOne(ev);
+            } else if (type === 'videos') {
+                trigVideos();
+                window.NewVideos.newOne(ev);
+            } else if (type === 'music') {
+                trigMusic();
+                window.NewMusic.newOne(ev);
+            }
         },
         viewOne: function(ev) {
             console.log('viewOne ',ev,ev.target.id);
