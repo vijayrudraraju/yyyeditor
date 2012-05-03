@@ -64,7 +64,7 @@ $(function(){
         events: {
             "click .view-button": "viewOne",
             "click .edit-button": "editOne",
-            "click .all-new-button": "newOne"
+            "click .all-new-button": "newOne",
         },
         initialize: function() {
             this.selectedId = 0;
@@ -157,17 +157,22 @@ $(function(){
 
 
 
-
-
     window.NewTextView = Backbone.View.extend({
         selectedId: 0,
+        selectedModel: {},
+        coverName: [],
         events: {
             "click .text-view-button": "viewOne",
             "click .text-edit-button": "editOne",
-            "click #text-new-button": "newOne"
+            "click #text-new-button": "newOne",
+            "change #text-new-cover": "coverFileChange",
+            "change #text-edit-cover": "editCoverFileChange"
         },
         initialize: function() {
             this.selectedId = 0;
+            this.selectedModel = {};
+            this.coverName = [];
+
             Texts.on('reset', this.onReset, this);
             Texts.fetch({success: function() { console.log('text fetch success');}});
         },
@@ -194,9 +199,20 @@ $(function(){
         newOne: function(ev) {
             console.log('text newOne ',ev,ev.target.id);
 
+            $('#text-new-cover').parent().html($('#text-new-cover').parent().html());
+            $('#text-new-title').val('');
+            $('#text-new-author').val('');
+            $('#text-new-main').val('');
+
             $('#text-new-form').show();
             $('#text-edit-form').hide();
             $('#text-articles-grid').hide();
+
+            this.selectedId = 0;
+            this.selectedModel = {};
+            self.coverName = [];
+
+            this.refreshCoverAttachment();
         },
         editOne: function(ev) {
             console.log('text editOne ',ev,ev.target.id);
@@ -206,59 +222,189 @@ $(function(){
             console.log(model);
 
             this.selectedId = model.id;
+            this.selectedModel = model;
 
             $('#text-new-form').hide();
             $('#text-edit-form').show();
             $('#text-articles-grid').hide();
 
+            $('#text-new-cover').parent().html($('#text-new-cover').parent().html());
             $('#text-edit-title').val(model.get('title'));
             $('#text-edit-author').val(model.get('author'));
             $('#text-edit-main').val(model.get('text'));
             $('#text-edit-form :hidden').val(model.get('_rev'));
+
+            this.refreshCoverAttachment();
         },
         addOne: function(model) {
             console.log(model);
             $('#text-articles-grid ul').append(
-                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="text-edit-button" id="text-edit-'+model.cid+'">edit</button><button type="button" class="text-view-button" id="text-view-'+model.cid+'">view</button></li>'
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="text-edit-button" id="text-edit-'+model.id+'">edit</button><button type="button" class="text-view-button" id="text-view-'+model.cid+'">view</button></li>'
             );
         },
+        coverFileChange: function(ev) {
+            console.log('text coverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        editCoverFileChange: function(ev) {
+            console.log('text editCoverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        refreshCoverAttachment: function() {
+            console.log('text refreshCoverAttachment');
+
+            var self = this;
+
+            $('#text-new-cover-preview').html('');
+            var file = $('#text-new-cover')[0].files[0];
+            if (file) {
+                $('#text-new-cover-preview').append('<li>'+file.name);
+                $('#text-new-cover-preview').append('<img class="thumbnail" id="text-new-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#text-new-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            }
+
+            $('#text-edit-cover-preview').html('');
+            var file = $('#text-edit-cover')[0].files[0];
+            if (file) {
+                $('#text-edit-cover-preview').append('<li>'+file.name);
+                $('#text-edit-cover-preview').append('<img class="thumbnail" id="text-edit-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#text-edit-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            } else if (self.selectedModel.id) {
+                file = self.selectedModel.get('covername');
+                $('#text-edit-cover-preview').append('<li>'+file);
+                $('#text-edit-cover-preview').append('<img class="thumbnail" id="text-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/>');
+            }
+        },
         saveNewToServer: function() {
-            console.log('saveNewToServer text');
+            console.log('text saveNewToServer');
+
+            var self = this;
+            self.coverName= [];
+            for (var i=0;i<$('#text-new-cover')[0].files.length;i++) {
+                self.coverName.push($('#text-new-cover')[0].files[i].name);
+            }
 
             Texts.add({
                 title:$('#text-new-title').val(),
                 author:$('#text-new-author').val(),
-                text:$('#text-new-main').val()
+                text:$('#text-new-main').val(),
+                covername:self.coverName
             });
 
             Texts.at(Texts.length-1).save({},{
                 success: function() { 
                     console.log('save success ' + Texts.at(Texts.length-1).id + ' ' + Texts.at(Texts.length-1).cid); 
-                    Texts.fetch({success: function() { console.log('post save fetch success');}});
 
-                    $('#text-new-form').hide();
-                    $('#text-edit-form').hide();
-                    $('#text-articles-grid').show();
+                    if (self.coverName.length) {
+                        $('#text-new-form :hidden').val(Texts.at(Texts.length-1).get('_rev'));
+                        $('#text-new-form').ajaxSubmit({
+                            url: '/yyy/'+Texts.at(Texts.length-1).id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log('text data upload success!');
+                                console.log(data);
+
+                                Texts.fetch({
+                                    success: function() { 
+                                        console.log('text data post save fetch success');
+
+                                        $('#text-new-form').hide();
+                                        $('#text-edit-form').hide();
+                                        $('#text-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log('text data upload error!');
+                            }
+                        });
+                    } else {
+                        Texts.fetch({
+                            success: function() { 
+                                console.log('text data post save fetch success');
+
+                                $('#text-new-form').hide();
+                                $('#text-edit-form').hide();
+                                $('#text-articles-grid').show();
+                            }
+                        });
+                    }
+
                 }
             });
         },
         saveOldToServer: function() {
             console.log('saveOldToServer text');
 
-            Texts.get(this.selectedId).set({
-                title:$('#text-edit-title').val(),
-                author:$('#text-edit-author').val(),
-                text:$('#text-edit-main').val()
-            });
+            var self = this;
+            if ($('#text-edit-cover')[0].files.length) {
+                self.coverName[0] = $('#text-edit-cover')[0].files[0].name;
+
+                Texts.get(this.selectedId).set({
+                    title:$('#text-edit-title').val(),
+                    author:$('#text-edit-author').val(),
+                    text:$('#text-edit-main').val(),
+                    covername:self.coverName
+                });
+            } else {
+                self.coverName = [];
+
+                Texts.get(this.selectedId).set({
+                    title:$('#text-edit-title').val(),
+                    author:$('#text-edit-author').val(),
+                    text:$('#text-edit-main').val()
+                });
+            }
+
+            var id = this.selectedId;
 
             Texts.get(this.selectedId).save({},{
-                success: function(model) { 
-                    console.log('text re-save success ' + model.id + ' ' + model.cid); 
-                    Texts.fetch({success: function() { console.log('text post re-save fetch success');}});
+                success: function() { 
+                    console.log('text resave success ' + Texts.get(id).id + ' ' + Texts.get(id).cid); 
 
-                    $('#text-new-form').hide();
-                    $('#text-edit-form').hide();
-                    $('#text-articles-grid').show();
+                    if (self.coverName.length) {
+                        $('#text-edit-form :hidden').val(Texts.get(id).get('_rev'));
+                        $('#text-edit-form').ajaxSubmit({
+                            url: '/yyy/'+id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log('text data upload success!');
+                                console.log(data);
+
+                                Texts.fetch({
+                                    success: function() { 
+                                        console.log('text data post save fetch success');
+
+                                        $('#text-new-form').hide();
+                                        $('#text-edit-form').hide();
+                                        $('#text-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log('text data upload error!');
+                            }
+                        });
+                    } else {
+                        Texts.fetch({
+                            success: function() { 
+                                console.log('text data post save fetch success');
+
+                                $('#text-new-form').hide();
+                                $('#text-edit-form').hide();
+                                $('#text-articles-grid').show();
+                            }
+                        });
+                    }
+
                 }
             });
         }
@@ -298,7 +444,7 @@ $(function(){
             self.selectedId = -1;
             self.fileNames = [];
             self.selectedModel = {};
-            //$('#images-new-main').change(this.fileChange);
+
             Images.on('reset', this.onReset, this);
             Images.fetch({success: function() { console.log('images fetch success');}});
         },
@@ -356,7 +502,7 @@ $(function(){
         addOne: function(model) {
             console.log(model);
             $('#images-articles-grid ul').append(
-                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="images-edit-button" id="images-edit-'+model.cid+'">edit</button><button type="button" class="images-view-button" id="images-view-'+model.cid+'">view</button></li>'
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="images-edit-button" id="images-edit-'+model.id+'">edit</button><button type="button" class="images-view-button" id="images-view-'+model.cid+'">view</button></li>'
             );
         },
         deleteImage: function(ev) {
@@ -445,29 +591,41 @@ $(function(){
             Images.at(Images.length-1).save({},{
                 success: function() { 
                     console.log('save success ' + Images.at(Images.length-1).id + ' ' + Images.at(Images.length-1).cid); 
-                    $('#images-new-form :hidden').val(Images.at(Images.length-1).get('_rev'));
-                    $('#images-new-form').ajaxSubmit({
-                        url: '/yyy/'+Images.at(Images.length-1).id,
-                        type: 'post',
-                        dataType: 'json',
-                        success: function(data) {
-                            console.log('images data upload success!');
-                            console.log(data);
+                    if (self.fileNames.length) {
+                        $('#images-new-form :hidden').val(Images.at(Images.length-1).get('_rev'));
+                        $('#images-new-form').ajaxSubmit({
+                            url: '/yyy/'+Images.at(Images.length-1).id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log('images data upload success!');
+                                console.log(data);
 
-                            Images.fetch({
-                                success: function() { 
-                                    console.log('images data post save fetch success');
+                                Images.fetch({
+                                    success: function() { 
+                                        console.log('images data post save fetch success');
 
-                                    $('#images-new-form').hide();
-                                    $('#images-edit-form').hide();
-                                    $('#images-articles-grid').show();
-                                }
-                            });
-                        },
-                        error: function(data) {
-                            console.log('images data upload error!');
-                        }
-                    });
+                                        $('#images-new-form').hide();
+                                        $('#images-edit-form').hide();
+                                        $('#images-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log('images data upload error!');
+                            }
+                        });
+                    } else {
+                        Images.fetch({
+                            success: function() { 
+                                console.log('images data post save fetch success');
+
+                                $('#images-new-form').hide();
+                                $('#images-edit-form').hide();
+                                $('#images-articles-grid').show();
+                            }
+                        });
+                    }
                 }
             });
         },
@@ -517,9 +675,15 @@ $(function(){
                             }
                         });
                     } else {
-                        $('#images-new-form').hide();
-                        $('#images-edit-form').hide();
-                        $('#images-articles-grid').show();
+                        Images.fetch({
+                            success: function() { 
+                                console.log('post save fetch success');
+
+                                $('#images-new-form').hide();
+                                $('#images-edit-form').hide();
+                                $('#images-articles-grid').show();
+                            }
+                        });
                     }
                 }
             });
@@ -548,17 +712,22 @@ $(function(){
         selectedId: 0,
         selectedModel: {},
         videoCodes: [],
+        coverName: [],
         events: {
             "click .videos-view-button": "viewOne",
             "click .videos-edit-button": "editOne",
             "click #videos-new-button": "newOne",
             "click .videos-add-button": "addVideo",
-            "click .videos-delete-button": "deleteVideo"
+            "click .videos-delete-button": "deleteVideo",
+            "change #videos-new-cover": "coverFileChange",
+            "change #videos-edit-cover": "editCoverFileChange"
         },
         initialize: function() {
             this.selectedId = 0;
             this.selectedModel = {};
             this.videoCodes = [];
+            this.coverName = [];
+
             Videos.on('reset', this.onReset, this);
             Videos.fetch({success: function() { console.log('videos fetch success');}});
         },
@@ -583,6 +752,11 @@ $(function(){
         newOne: function(ev) {
             console.log('videos newOne ',ev,ev.target.id);
 
+            $('#videos-new-cover').parent().html($('#videos-new-cover').parent().html());
+            $('#videos-new-title').val('');
+            $('#videos-new-author').val('');
+            $('#videos-new-code').val('');
+
             $('#videos-new-form').show();
             $('#videos-edit-form').hide();
             $('#videos-articles-grid').hide();
@@ -590,12 +764,13 @@ $(function(){
             this.videoCodes = []; 
             this.selectedId = 0;
             this.selectedModel = {};
+
             this.refreshVideosAttachments();
         },
         addOne: function(model) {
             console.log(model);
             $('#videos-articles-grid ul').append(
-                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="videos-edit-button" id="videos-edit-'+model.cid+'">edit</button><button type="button" class="videos-view-button" id="videos-view-'+model.cid+'">view</button></li>'
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="videos-edit-button" id="videos-edit-'+model.id+'">edit</button><button type="button" class="videos-view-button" id="videos-view-'+model.cid+'">view</button></li>'
             );
         },
         editOne: function(ev) {
@@ -612,14 +787,17 @@ $(function(){
             $('#videos-edit-form').show();
             $('#videos-articles-grid').hide();
 
+            $('#videos-new-cover').parent().html($('#videos-new-cover').parent().html());
             $('#videos-edit-title').val(model.get('title'));
             $('#videos-edit-author').val(model.get('author'));
+            $('#videos-edit-code').val('');
             this.videoCodes = model.get('videos');
             $('#videos-edit-form :hidden').val(model.get('_rev'));
 
             var codes = model.get('videos');
 
             this.refreshVideosAttachments();
+            this.refreshCoverAttachment();
         },
         addVideo: function(ev) {
             console.log('videos addVideo');
@@ -653,6 +831,45 @@ $(function(){
             
             self.refreshVideosAttachments();
         },
+        coverFileChange: function(ev) {
+            console.log('videos coverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        editCoverFileChange: function(ev) {
+            console.log('videos editCoverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        refreshCoverAttachment: function() {
+            console.log('videos refreshCoverAttachment');
+
+            var self = this;
+
+            $('#videos-new-cover-preview').html('');
+            var file = $('#videos-new-cover')[0].files[0];
+            if (file) {
+                $('#videos-new-cover-preview').append('<li>'+file.name);
+                $('#videos-new-cover-preview').append('<img class="thumbnail" id="videos-new-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#videos-new-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            }
+
+            $('#videos-edit-cover-preview').html('');
+            var file = $('#videos-edit-cover')[0].files[0];
+            if (file) {
+                $('#videos-edit-cover-preview').append('<li>'+file.name);
+                $('#videos-edit-cover-preview').append('<img class="thumbnail" id="videos-edit-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#videos-edit-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            } else if (self.selectedModel.id) {
+                file = self.selectedModel.get('covername');
+                $('#videos-edit-cover-preview').append('<li>'+file);
+                $('#videos-edit-cover-preview').append('<img class="thumbnail" id="videos-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/>');
+            }
+        },
         refreshVideosAttachments: function() {
             var self = this;
             $('#videos-new-codes').html('');
@@ -673,20 +890,58 @@ $(function(){
             console.log('videos saveNewToServer');
 
             var self = this;
+            self.coverName= [];
+            for (var i=0;i<$('#videos-new-cover')[0].files.length;i++) {
+                self.coverName.push($('#videos-new-cover')[0].files[i].name);
+            }
+
             Videos.add({
                 title:$('#videos-new-title').val(),
                 author:$('#videos-new-author').val(),
-                videos:self.videoCodes
+                videos:self.videoCodes,
+                covername:self.coverName
             });
 
             Videos.at(Videos.length-1).save({},{
                 success: function() { 
                     console.log('save success ' + Videos.at(Videos.length-1).id + ' ' + Videos.at(Videos.length-1).cid); 
-                    Videos.fetch({success: function() { console.log('post save fetch success');}});
 
-                    $('#videos-new-form').hide();
-                    $('#videos-edit-form').hide();
-                    $('#videos-articles-grid').show();
+                    if (self.coverName.length) {
+                        $('#videos-new-form :hidden').val(Videos.at(Videos.length-1).get('_rev'));
+                        $('#videos-new-form').ajaxSubmit({
+                            url: '/yyy/'+Videos.at(Videos.length-1).id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log('videos data upload success!');
+                                console.log(data);
+
+                                Videos.fetch({
+                                    success: function() { 
+                                        console.log('videos data post save fetch success');
+
+                                        $('#videos-new-form').hide();
+                                        $('#videos-edit-form').hide();
+                                        $('#videos-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log('videos data upload error!');
+                            }
+                        });
+                    } else {
+                        Videos.fetch({
+                            success: function() { 
+                                console.log('videos data post save fetch success');
+
+                                $('#videos-new-form').hide();
+                                $('#videos-edit-form').hide();
+                                $('#videos-articles-grid').show();
+                            }
+                        });
+                    }
+
                 }
             });
         },
@@ -694,20 +949,69 @@ $(function(){
             console.log('videos saveOldToServer');
 
             var self = this;
-            Videos.get(this.selectedId).set({
-                title:$('#videos-edit-title').val(),
-                author:$('#videos-edit-author').val(),
-                videos:self.videoCodes
-            });
+            if ($('#videos-edit-cover')[0].files.length) {
+                self.coverName[0] = $('#videos-edit-cover')[0].files[0].name;
+
+                Videos.get(this.selectedId).set({
+                    title:$('#videos-edit-title').val(),
+                    author:$('#videos-edit-author').val(),
+                    videos:$('#videos-edit-main').val(),
+                    videos:self.videoCodes,
+                    covername:self.coverName
+                });
+            } else {
+                self.coverName = [];
+
+                Videos.get(this.selectedId).set({
+                    title:$('#videos-edit-title').val(),
+                    author:$('#videos-edit-author').val(),
+                    videos:$('#videos-edit-main').val(),
+                    videos:self.videoCodes
+                });
+            }
+
+            var id = this.selectedId;
 
             Videos.get(this.selectedId).save({},{
-                success: function(model) { 
-                    console.log('videos re-save success ' + model.id + ' ' + model.cid); 
-                    Videos.fetch({success: function() { console.log('videos post re-save fetch success');}});
+                success: function() { 
+                    console.log('videos resave success ' + Videos.get(id).id + ' ' + Videos.get(id).cid); 
 
-                    $('#videos-new-form').hide();
-                    $('#videos-edit-form').hide();
-                    $('#videos-articles-grid').show();
+                    if (self.coverName.length) {
+                        $('#videos-edit-form :hidden').val(Videos.get(id).get('_rev'));
+                        $('#videos-edit-form').ajaxSubmit({
+                            url: '/yyy/'+id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log('videos data upload success!');
+                                console.log(data);
+
+                                Videos.fetch({
+                                    success: function() { 
+                                        console.log('videos data post save fetch success');
+
+                                        $('#videos-new-form').hide();
+                                        $('#videos-edit-form').hide();
+                                        $('#videos-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log('videos data upload error!');
+                            }
+                        });
+                    } else {
+                        Videos.fetch({
+                            success: function() { 
+                                console.log('videos data post save fetch success');
+
+                                $('#videos-new-form').hide();
+                                $('#videos-edit-form').hide();
+                                $('#videos-articles-grid').show();
+                            }
+                        });
+                    }
+
                 }
             });
         }
@@ -791,7 +1095,7 @@ $(function(){
         addOne: function(model) {
             console.log(model);
             $('#music-articles-grid ul').append(
-                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="music-edit-button" id="music-edit-'+model.cid+'">edit</button><button type="button" class="music-view-button" id="music-view-'+model.cid+'">view</button></li>'
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="music-edit-button" id="music-edit-'+model.id+'">edit</button><button type="button" class="music-view-button" id="music-view-'+model.cid+'">view</button></li>'
             );
         },
         saveNewToServer: function() {

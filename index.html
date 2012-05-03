@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <title>YESYESYES edit</title>
         <meta name="description" content="page for editing yesyesyes">
-        <meta name="programmer" content="vijay rudraraju">
+        <meta name="programmer" content="yesyesyes">
 
         <link rel="stylesheet" type="text/css" href="style/yyy-page.css"/>
 
@@ -20,9 +20,6 @@
         <script src="script/jquery.form.js"></script>
 
         <script src="script/yyy-edit.js"></script>
-
-        <script type="text/template" id="text-edit-template">
-        </script>
 
     </head>
 
@@ -75,6 +72,15 @@
                                 <legend>new text form</legend>
 
                                 <div>
+                                    <label for="text-new-cover">new cover image</label>
+                                    <div>
+                                        <input type="file" id="text-new-cover" name="_attachments"/>
+                                        <ul id="text-new-cover-preview">
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label for="text-new-title">new text title</label>
                                     <div>
                                         <input id="text-new-title" type="text" placeholder="text title" name="title"/>
@@ -98,6 +104,7 @@
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="add new article"/>
+                                        <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
 
@@ -107,6 +114,15 @@
                         <form id="text-edit-form" class="subsection">
                             <fieldset>
                                 <legend>edit text form</legend>
+
+                                <div>
+                                    <label for="text-edit-cover">edit cover image</label>
+                                    <div>
+                                        <input type="file" id="text-edit-cover" name="_attachments"/> 
+                                        <ul id="text-edit-cover-preview">
+                                        </ul>
+                                    </div>
+                                </div>
 
                                 <div>
                                     <label for="text-edit-title">edit text title</label>
@@ -242,6 +258,15 @@
                                 <legend>new videos form</legend>
 
                                 <div>
+                                    <label for="videos-new-cover">new cover image</label>
+                                    <div>
+                                        <input type="file" id="videos-new-cover" name="_attachments"/>
+                                        <ul id="videos-new-cover-preview">
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label for="videos-new-title">new videos title</label>
                                     <div>
                                         <input id="videos-new-title" type="text" placeholder="videos title" name="title"/>
@@ -268,6 +293,7 @@
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="add new article"/>
+                                        <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
 
@@ -277,6 +303,15 @@
                         <form id="videos-edit-form" class="subsection">
                             <fieldset>
                                 <legend>edit videos form</legend>
+
+                                <div>
+                                    <label for="videos-edit-cover">new cover image</label>
+                                    <div>
+                                        <input type="file" id="videos-edit-cover" name="_attachments"/>
+                                        <ul id="videos-edit-cover-preview">
+                                        </ul>
+                                    </div>
+                                </div>
 
                                 <div>
                                     <label for="videos-edit-title">edit videos title</label>
@@ -306,6 +341,7 @@
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="save modified article"/>
+                                        <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
 
@@ -327,6 +363,15 @@
                         <form id="music-new-form" class="subsection">
                             <fieldset>
                                 <legend>new music form</legend>
+
+                                <div>
+                                    <label for="music-new-cover">new cover image</label>
+                                    <div>
+                                        <input type="file" id="music-new-cover" name="_attachments"/>
+                                        <ul id="music-new-cover-preview">
+                                        </ul>
+                                    </div>
+                                </div>
 
                                 <div>
                                     <label for="music-new-title">new music title</label>
@@ -352,6 +397,7 @@
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="add new article"/>
+                                        <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
 
@@ -361,6 +407,15 @@
                         <form id="music-edit-form" class="subsection">
                             <fieldset>
                                 <legend>edit music form</legend>
+
+                                <div>
+                                    <label for="music-edit-cover">edit cover image</label>
+                                    <div>
+                                        <input type="file" id="music-edit-cover" name="_attachments"/>
+                                        <ul id="music-edit-cover-preview">
+                                        </ul>
+                                    </div>
+                                </div>
 
                                 <div>
                                     <label for="music-edit-title">edit music title</label>
@@ -386,6 +441,7 @@
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="save modified article"/>
+                                        <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
 
