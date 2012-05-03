@@ -278,7 +278,7 @@ $(function(){
             } else if (self.selectedModel.id) {
                 file = self.selectedModel.get('covername');
                 $('#text-edit-cover-preview').append('<li>'+file);
-                $('#text-edit-cover-preview').append('<img class="thumbnail" id="text-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/>');
+                $('#text-edit-cover-preview').append('<img class="thumbnail" id="text-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/></li>');
             }
         },
         saveNewToServer: function() {
@@ -430,20 +430,22 @@ $(function(){
         selectedId: 0,
         fileNames: [],
         selectedModel: {},
+        coverName: [],
         events: {
             "change #images-new-main": "fileChange",
             "change #images-edit-main": "fileChangeEdit",
             "click .images-view-button": "viewOne",
             "click .images-edit-button": "editOne",
             "click #images-new-button": "newOne",
-            "click .images-delete-button": "deleteImage"
+            "click .images-delete-button": "deleteImage",
+            "change #images-new-cover": "coverFileChange",
+            "change #images-edit-cover": "editCoverFileChange"
         },
         initialize: function() {
-            console.log(this);
-            var self = this;
-            self.selectedId = -1;
-            self.fileNames = [];
-            self.selectedModel = {};
+            this.selectedId = 0;
+            this.selectedModel = {};
+            this.fileNames = [];
+            this.coverName = [];
 
             Images.on('reset', this.onReset, this);
             Images.fetch({success: function() { console.log('images fetch success');}});
@@ -469,6 +471,7 @@ $(function(){
         newOne: function(ev) {
             console.log('images newOne ',ev,ev.target.id);
 
+            $('#images-new-cover').parent().html($('#images-new-cover').parent().html());
             $('#images-new-title').val('');
             $('#images-new-author').val('');
             $('#images-new-main').parent().html($('#images-new-main').parent().html());
@@ -477,6 +480,12 @@ $(function(){
             $('#images-new-form').show();
             $('#images-edit-form').hide();
             $('#images-articles-grid').hide();
+
+            this.selectedId = 0;
+            this.selectedModel = {};
+
+            this.refreshImagesAttachments();
+            this.refreshCoverAttachment();
         },
         editOne: function(ev) {
             console.log('images editOne ',ev,ev.target.id);
@@ -492,12 +501,14 @@ $(function(){
             $('#images-edit-form').show();
             $('#images-articles-grid').hide();
 
+            $('#images-edit-cover').parent().html($('#images-edit-cover').parent().html());
             $('#images-edit-title').val(model.get('title'));
             $('#images-edit-author').val(model.get('author'));
             $('#images-edit-main').parent().html($('#images-edit-main').parent().html());
             $('#images-edit-form :hidden').val(model.get('_rev'));
 
             this.refreshImagesAttachments();
+            this.refreshCoverAttachment();
         },
         addOne: function(model) {
             console.log(model);
@@ -509,22 +520,73 @@ $(function(){
             console.log('images deleteImage',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
-            var model = Images.getByCid(stringArray[4]);
+            var model = Images.get(stringArray[4]);
             var imageIndex = stringArray[5];
             var stubs = model.get('_attachments');
             var filenames = model.get('filenames');
+            var covername = model.get('covername');
+            var coverIndex = filenames.indexOf(covername);
 
-            if (stringArray[2] == 'old') {
-                var name = filenames.splice(imageIndex,1);
-                delete stubs[name];
+            console.log(imageIndex,coverIndex);
+
+/*
+            if (coverIndex < imageIndex) {
+                imageIndex++;
             }
+            */
+
+            var name = filenames.splice(imageIndex,1);
+            console.log(name, filenames);
+            delete stubs[name];
 
             model.set({
                 _attachments:stubs,
                 filenames:filenames
             });
 
+            this.selectedModel = model;
+
             this.refreshImagesAttachments();
+        },
+        coverFileChange: function(ev) {
+            console.log('images coverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        editCoverFileChange: function(ev) {
+            console.log('images editCoverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        refreshCoverAttachment: function() {
+            console.log('images refreshCoverAttachment');
+
+            var self = this;
+
+            $('#images-new-cover-preview').html('');
+            var file = $('#images-new-cover')[0].files[0];
+            if (file) {
+                $('#images-new-cover-preview').append('<li>'+file.name);
+                $('#images-new-cover-preview').append('<img class="thumbnail" id="images-new-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#images-new-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            }
+
+            $('#images-edit-cover-preview').html('');
+            var file = $('#images-edit-cover')[0].files[0];
+            if (file) {
+                $('#images-edit-cover-preview').append('<li>'+file.name);
+                $('#images-edit-cover-preview').append('<img class="thumbnail" id="images-edit-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#images-edit-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            } else if (self.selectedModel.id) {
+                file = self.selectedModel.get('covername');
+                console.log(file);
+                $('#images-edit-cover-preview').append('<li>'+file);
+                $('#images-edit-cover-preview').append('<img class="thumbnail" id="images-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/></li>');
+            }
         },
         refreshImagesAttachments: function() {
             console.log('images refreshImagesAttachments');
@@ -547,12 +609,14 @@ $(function(){
             $('#images-edit-files').html('');
             if (self.selectedModel.id) {
                 files = self.selectedModel.get('filenames');
+                console.log(files);
                 for (var i=0;i<files.length;i++) {
-                    $('#images-edit-files').append('<li>'+files[i]+'</li>');
+                    $('#images-edit-files').append('<li>'+files[i]);
                     $('#images-edit-files').append('<img class="thumbnail" id="images-files-'+i+'" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+files[i]+'" alt="image"/>');
-                    $('#images-edit-files').append('<button type="button" class="images-delete-button" id="images-edit-old-delete-'+self.selectedModel.cid+'-'+i+'">delete</button></li>');
+                    $('#images-edit-files').append('<button type="button" class="images-delete-button" id="images-edit-old-delete-'+self.selectedModel.id+'-'+i+'">delete</button></li>');
                 }
             }
+
             files = $('#images-edit-main')[0].files;
             for (var i=0;i<files.length;i++) {
                 $('#images-edit-files').append('<li>'+files[i].name);
@@ -581,11 +645,16 @@ $(function(){
             for (var i=0;i<$('#images-new-main')[0].files.length;i++) {
                 self.fileNames.push($('#images-new-main')[0].files[i].name);
             }
+            self.coverName= [];
+            for (var i=0;i<$('#images-new-cover')[0].files.length;i++) {
+                self.coverName.push($('#images-new-cover')[0].files[i].name);
+            }
             
             Images.add({
                 title:$('#images-new-title').val(),
                 author:$('#images-new-author').val(),
-                filenames:self.fileNames
+                filenames:self.fileNames,
+                covername:self.coverName
             });
 
             Images.at(Images.length-1).save({},{
@@ -766,12 +835,7 @@ $(function(){
             this.selectedModel = {};
 
             this.refreshVideosAttachments();
-        },
-        addOne: function(model) {
-            console.log(model);
-            $('#videos-articles-grid ul').append(
-                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="videos-edit-button" id="videos-edit-'+model.id+'">edit</button><button type="button" class="videos-view-button" id="videos-view-'+model.cid+'">view</button></li>'
-            );
+            this.refreshCoverAttachment();
         },
         editOne: function(ev) {
             console.log('videos editOne ',ev,ev.target.id);
@@ -787,17 +851,21 @@ $(function(){
             $('#videos-edit-form').show();
             $('#videos-articles-grid').hide();
 
-            $('#videos-new-cover').parent().html($('#videos-new-cover').parent().html());
+            $('#videos-edit-cover').parent().html($('#videos-edit-cover').parent().html());
             $('#videos-edit-title').val(model.get('title'));
             $('#videos-edit-author').val(model.get('author'));
             $('#videos-edit-code').val('');
             this.videoCodes = model.get('videos');
             $('#videos-edit-form :hidden').val(model.get('_rev'));
 
-            var codes = model.get('videos');
-
             this.refreshVideosAttachments();
             this.refreshCoverAttachment();
+        },
+        addOne: function(model) {
+            console.log(model);
+            $('#videos-articles-grid ul').append(
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="videos-edit-button" id="videos-edit-'+model.id+'">edit</button><button type="button" class="videos-view-button" id="videos-view-'+model.cid+'">view</button></li>'
+            );
         },
         addVideo: function(ev) {
             console.log('videos addVideo');
@@ -866,8 +934,9 @@ $(function(){
                 reader.readAsDataURL(file);
             } else if (self.selectedModel.id) {
                 file = self.selectedModel.get('covername');
+                console.log(file);
                 $('#videos-edit-cover-preview').append('<li>'+file);
-                $('#videos-edit-cover-preview').append('<img class="thumbnail" id="videos-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/>');
+                $('#videos-edit-cover-preview').append('<img class="thumbnail" id="videos-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/></li>');
             }
         },
         refreshVideosAttachments: function() {
@@ -955,7 +1024,6 @@ $(function(){
                 Videos.get(this.selectedId).set({
                     title:$('#videos-edit-title').val(),
                     author:$('#videos-edit-author').val(),
-                    videos:$('#videos-edit-main').val(),
                     videos:self.videoCodes,
                     covername:self.coverName
                 });
@@ -965,7 +1033,6 @@ $(function(){
                 Videos.get(this.selectedId).set({
                     title:$('#videos-edit-title').val(),
                     author:$('#videos-edit-author').val(),
-                    videos:$('#videos-edit-main').val(),
                     videos:self.videoCodes
                 });
             }
@@ -1037,13 +1104,22 @@ $(function(){
 
     window.NewMusicView = Backbone.View.extend({
         selectedId: 0,
+        selectedModel: {},
+        trackCodes: [],
+        coverName: [],
         events: {
             "click .music-view-button": "viewOne",
             "click .music-edit-button": "editOne",
-            "click #music-new-button": "newOne"
+            "click #music-new-button": "newOne",
+            "change #music-new-cover": "coverFileChange",
+            "change #music-edit-cover": "editCoverFileChange"
         },
         initialize: function() {
             this.selectedId = 0;
+            this.selectedModel = {};
+            this.trackCodes = [];
+            this.coverName = [];
+
             Music.on('reset', this.onReset, this);
             Music.fetch({success: function() { console.log('music fetch success');}});
         },
@@ -1070,9 +1146,20 @@ $(function(){
         newOne: function(ev) {
             console.log('music newOne ',ev,ev.target.id);
 
+            $('#music-new-cover').parent().html($('#music-new-cover').parent().html());
+            $('#music-new-title').val('');
+            $('#music-new-author').val('');
+            $('#music-new-code').val('');
+
             $('#music-new-form').show();
             $('#music-edit-form').hide();
             $('#music-articles-grid').hide();
+
+            this.trackCodes = []; 
+            this.selectedId = 0;
+            this.selectedModel = {};
+
+            this.refreshCoverAttachment();
         },
         editOne: function(ev) {
             console.log('music editOne ',ev,ev.target.id);
@@ -1082,15 +1169,20 @@ $(function(){
             console.log(model);
 
             this.selectedId = model.id;
+            this.selectedModel = model;
 
             $('#music-new-form').hide();
             $('#music-edit-form').show();
             $('#music-articles-grid').hide();
 
+            $('#music-edit-cover').parent().html($('#music-edit-cover').parent().html());
             $('#music-edit-title').val(model.get('title'));
             $('#music-edit-author').val(model.get('author'));
-            $('#music-edit-main').val(model.get('text'));
+            $('#music-edit-code').val(model.get('tracks')[0]);
+            this.trackCodes = model.get('tracks');
             $('#music-edit-form :hidden').val(model.get('_rev'));
+
+            this.refreshCoverAttachment();
         },
         addOne: function(model) {
             console.log(model);
@@ -1098,23 +1190,103 @@ $(function(){
                 '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="music-edit-button" id="music-edit-'+model.id+'">edit</button><button type="button" class="music-view-button" id="music-view-'+model.cid+'">view</button></li>'
             );
         },
+        coverFileChange: function(ev) {
+            console.log('music coverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        editCoverFileChange: function(ev) {
+            console.log('music editCoverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        refreshCoverAttachment: function() {
+            console.log('music refreshCoverAttachment');
+
+            var self = this;
+
+            $('#music-new-cover-preview').html('');
+            var file = $('#music-new-cover')[0].files[0];
+            if (file) {
+                $('#music-new-cover-preview').append('<li>'+file.name);
+                $('#music-new-cover-preview').append('<img class="thumbnail" id="music-new-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#music-new-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            }
+
+            $('#music-edit-cover-preview').html('');
+            var file = $('#music-edit-cover')[0].files[0];
+            console.log('music-edit',file,self.selectedModel);
+            if (file) {
+                $('#music-edit-cover-preview').append('<li>'+file.name);
+                $('#music-edit-cover-preview').append('<img class="thumbnail" id="music-edit-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#music-edit-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            } else if (self.selectedModel.id) {
+                file = self.selectedModel.get('covername');
+                console.log(file);
+                $('#music-edit-cover-preview').append('<li>'+file);
+                $('#music-edit-cover-preview').append('<img class="thumbnail" id="music-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/></li>');
+            }
+        },
         saveNewToServer: function() {
             console.log('music saveNewToServer');
+
+            var self = this;
+            self.coverName= [];
+            for (var i=0;i<$('#music-new-cover')[0].files.length;i++) {
+                self.coverName.push($('#music-new-cover')[0].files[i].name);
+            }
 
             Music.add({
                 title:$('#music-new-title').val(),
                 author:$('#music-new-author').val(),
-                tracks:[$('#music-new-code').val()]
+                tracks:[$('#music-new-code').val()],
+                covername:self.coverName
             });
 
             Music.at(Music.length-1).save({},{
                 success: function() { 
-                    console.log('music save success ' + Music.at(Music.length-1).id + ' ' + Music.at(Music.length-1).cid); 
-                    Music.fetch({success: function() { console.log('music post save fetch success');}});
+                    console.log('save success ' + Music.at(Music.length-1).id + ' ' + Music.at(Music.length-1).cid); 
 
-                    $('#music-new-form').hide();
-                    $('#music-edit-form').hide();
-                    $('#music-articles-grid').show();
+                    if (self.coverName.length) {
+                        $('#music-new-form :hidden').val(Music.at(Music.length-1).get('_rev'));
+                        $('#music-new-form').ajaxSubmit({
+                            url: '/yyy/'+Music.at(Music.length-1).id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log('music data upload success!');
+                                console.log(data);
+
+                                Music.fetch({
+                                    success: function() { 
+                                        console.log('music data post save fetch success');
+
+                                        $('#music-new-form').hide();
+                                        $('#music-edit-form').hide();
+                                        $('#music-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log('music data upload error!');
+                            }
+                        });
+                    } else {
+                        Music.fetch({
+                            success: function() { 
+                                console.log('music data post save fetch success');
+
+                                $('#music-new-form').hide();
+                                $('#music-edit-form').hide();
+                                $('#music-articles-grid').show();
+                            }
+                        });
+                    }
+
                 }
             });
         },
@@ -1135,6 +1307,71 @@ $(function(){
                     $('#music-new-form').hide();
                     $('#music-edit-form').hide();
                     $('#music-articles-grid').show();
+                }
+            });
+
+            var self = this;
+            if ($('#music-edit-cover')[0].files.length) {
+                self.coverName[0] = $('#music-edit-cover')[0].files[0].name;
+
+                Music.get(this.selectedId).set({
+                    title:$('#music-edit-title').val(),
+                    author:$('#music-edit-author').val(),
+                    tracks:[$('#music-edit-code').val()],
+                    covername:self.coverName
+                });
+            } else {
+                self.coverName = [];
+
+                Music.get(this.selectedId).set({
+                    title:$('#music-edit-title').val(),
+                    author:$('#music-edit-author').val(),
+                    tracks:[$('#music-edit-code').val()]
+                });
+            }
+
+            var id = this.selectedId;
+
+            Music.get(this.selectedId).save({},{
+                success: function() { 
+                    console.log('music resave success ' + Music.get(id).id + ' ' + Music.get(id).cid); 
+
+                    if (self.coverName.length) {
+                        $('#music-edit-form :hidden').val(Music.get(id).get('_rev'));
+                        $('#music-edit-form').ajaxSubmit({
+                            url: '/yyy/'+id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log('music data upload success!');
+                                console.log(data);
+
+                                Music.fetch({
+                                    success: function() { 
+                                        console.log('music data post save fetch success');
+
+                                        $('#music-new-form').hide();
+                                        $('#music-edit-form').hide();
+                                        $('#music-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log('music data upload error!');
+                            }
+                        });
+                    } else {
+                        Music.fetch({
+                            success: function() { 
+                                console.log('music data post save fetch success');
+
+                                $('#music-new-form').hide();
+                                $('#music-edit-form').hide();
+                                $('#music-articles-grid').show();
+                            }
+                        });
+                    }
+
                 }
             });
         }

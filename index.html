@@ -6,6 +6,8 @@
         <meta name="description" content="page for editing yesyesyes">
         <meta name="programmer" content="yesyesyes">
 
+        <link href='http://fonts.googleapis.com/css?family=Cantata+One|Graduate|Cousine:400,700|Ovo|Sarina|Shadows+Into+Light|Rosarivo|Nosifer|EB+Garamond|Fredoka+One|Josefin+Sans:400,700|Ubuntu+Condensed|PT+Mono|Press+Start+2P|Bree+Serif|Diplomata+SC|Mrs+Sheppards|Abril+Fatface|Cutive|Kaushan+Script|Sancreek|Pontano+Sans|Varela|Didact+Gothic|Macondo|Boogaloo|Fondamento|Rock+Salt|Ewert|Alegreya+SC|Allan:700|Creepster|Carter+One|Bangers|Prata' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Karla:400,700|Telex' rel='stylesheet' type='text/css'/>
         <link rel="stylesheet" type="text/css" href="style/yyy-page.css"/>
 
         <style type="text/css">
@@ -172,6 +174,15 @@
                                 <legend>new images form</legend>
 
                                 <div>
+                                    <label for="images-new-cover">new cover image</label>
+                                    <div>
+                                        <input type="file" id="images-new-cover" name="_attachments"/>
+                                        <ul id="images-new-cover-preview">
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label for="images-new-title">new images title</label>
                                     <div>
                                         <input id="images-new-title" type="text" placeholder="images title"/>
@@ -207,6 +218,15 @@
                         <form id="images-edit-form" class="subsection">
                             <fieldset>
                                 <legend>edit images form</legend>
+
+                                <div>
+                                    <label for="images-edit-cover">edit cover image</label>
+                                    <div>
+                                        <input type="file" id="images-edit-cover" name="_attachments"/>
+                                        <ul id="images-edit-cover-preview">
+                                        </ul>
+                                    </div>
+                                </div>
 
                                 <div>
                                     <label for="images-edit-title">edit images title</label>

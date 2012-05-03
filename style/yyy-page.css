@@ -24,6 +24,12 @@ h2 {
     padding: 0px;
     border: 0px;
 }
+.page-header h2 {
+    font-family: 'Karla', sans-serif;
+}
+.section-header h2 {
+    font-family: 'Telex', sans-serif;
+}
 
 button, input.submit, input.button {
     font-size: 20px;
@@ -99,14 +105,6 @@ fieldset div {
     border-width: 1px;
 }
 
-.fullscreen {
-    width: 960px;
-}
-.thumbnail {
-    width: 90px;
-    height: 90px;
-        }
-
 .page-header {
     width: 960px;
     padding: 5px;
@@ -140,13 +138,27 @@ fieldset div {
     margin-left:auto;
     margin-right:auto;
 }
-.section img {
+.section > img {
     margin-top: 30px;
     margin-bottom: 30px;
     margin-left:auto;
     margin-right:auto;
-
 }
+.section-list img {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left:auto;
+    margin-right:auto;
+}
+.fullscreen {
+    width: 960px;
+}
+.thumbnail {
+    width: 90px;
+    height: 90px;
+    margin: 0px;
+}
+
 .section-list {
     padding-top: 20px;
     margin-top: 30px;
