@@ -65,6 +65,7 @@ $(function(){
             "click .view-button": "viewOne",
             "click .edit-button": "editOne",
             "click .all-new-button": "newOne",
+            "click .delete-button": "deleteOne"
         },
         initialize: function() {
             this.selectedId = 0;
@@ -76,7 +77,7 @@ $(function(){
             Pages.fetch({success: function() { console.log('all refresh fetch success');}});
         },
         onReset: function(coll,resp) {
-            console.log('onReset all');
+            console.log('all onReset');
 
             $('#all-articles-grid ul').html('');
             Pages.each(this.addOne);
@@ -103,7 +104,7 @@ $(function(){
             }
         },
         viewOne: function(ev) {
-            console.log('viewOne ',ev,ev.target.id);
+            console.log('all viewOne ',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
             var model = Pages.getByCid(stringArray[2]);
@@ -122,7 +123,7 @@ $(function(){
                 window.open('_show/musicArticle/'+this.selectedId);
         },
         editOne: function(ev) {
-            console.log('images editOne ',ev,ev.target.id);
+            console.log('all editOne ',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
             var model = Pages.get(stringArray[2]);
@@ -142,11 +143,28 @@ $(function(){
                 window.NewMusic.editOne(ev);
             }
         },
+        deleteOne: function(ev) {
+            console.log('images editOne ',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var model = Pages.get(stringArray[2]);
+            console.log(model);
+
+            model.destroy({
+                success: function() {
+                    console.log('article deletion success');
+                    Pages.fetch({success: function() { console.log('post deletion all fetch success');}});
+                },
+                error: function(data) {
+                    console.log('article deletion error!');
+                }
+            });
+        },
         addOne: function(model) {
             console.log(model);
 
             $('#all-articles-grid ul').append(
-                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="edit-button" id="all-edit-'+model.id+'">edit</button><button type="button" class="view-button" id="all-view-'+model.cid+'">view</button></li>'
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="edit-button" id="all-edit-'+model.id+'">edit</button><button type="button" class="view-button" id="all-view-'+model.cid+'">view</button><button type="button" class="delete-button" id="all-delete-'+model.id+'">delete</button></li>'
             );
         },
     });
@@ -288,6 +306,11 @@ $(function(){
             self.coverName= [];
             for (var i=0;i<$('#text-new-cover')[0].files.length;i++) {
                 self.coverName.push($('#text-new-cover')[0].files[i].name);
+            }
+
+            if ($('#text-new-title').val() === '' || $('#text-new-author').val() === '' || $('#text-new-main').val() === '' || self.coverName.length === 0) {
+                alert('somethings empty!! not gonna do it');
+                return;
             }
 
             Texts.add({
@@ -649,6 +672,11 @@ $(function(){
             for (var i=0;i<$('#images-new-cover')[0].files.length;i++) {
                 self.coverName.push($('#images-new-cover')[0].files[i].name);
             }
+
+            if ($('#images-new-title').val() === '' || $('#images-new-author').val() === '' || self.fileNames.length === 0 || self.coverName.length === 0) {
+                alert('somethings empty!! not gonna do it');
+                return;
+            }
             
             Images.add({
                 title:$('#images-new-title').val(),
@@ -712,14 +740,36 @@ $(function(){
             filenames = filenames.concat(self.fileNames);
             console.log('combined filenames',filenames);
 
+            if ($('#images-edit-cover')[0].files.length) {
+                self.coverName[0] = $('#images-edit-cover')[0].files[0].name;
+
+                Images.get(this.selectedId).set({
+                    title:$('#images-edit-title').val(),
+                    author:$('#images-edit-author').val(),
+                    filenames:filenames,
+                    covername:self.coverName
+                });
+            } else {
+                self.coverName = [];
+
+                Images.get(this.selectedId).set({
+                    title:$('#images-edit-title').val(),
+                    author:$('#images-edit-author').val(),
+                    filenames:filenames
+                });
+            }
+
+
+/*
             Images.get(id).set({
                 filenames:filenames
             });
+            */
 
             Images.get(id).save({},{
                 success: function() { 
                     console.log('save success ' + Images.get(id).id + ' ' + Images.get(id).cid); 
-                    if (self.fileNames.length) {
+                    if (self.fileNames.length || self.coverName.length) {
                         $('#images-edit-form :hidden').val(Images.get(id).get('_rev'));
                         $('#images-edit-form').ajaxSubmit({
                             url: '/yyy/'+id,
@@ -962,6 +1012,11 @@ $(function(){
             self.coverName= [];
             for (var i=0;i<$('#videos-new-cover')[0].files.length;i++) {
                 self.coverName.push($('#videos-new-cover')[0].files[i].name);
+            }
+
+            if ($('#videos-new-title').val() === '' || $('#videos-new-author').val() === '' || self.videoCodes.length === 0 || self.coverName.length === 0) {
+                alert('somethings empty!! not gonna do it');
+                return;
             }
 
             Videos.add({
@@ -1238,6 +1293,11 @@ $(function(){
             self.coverName= [];
             for (var i=0;i<$('#music-new-cover')[0].files.length;i++) {
                 self.coverName.push($('#music-new-cover')[0].files[i].name);
+            }
+
+            if ($('#music-new-title').val() === '' || $('#music-new-author').val() === '' || $('#music-new-code').val() === '' || self.coverName.length === 0) {
+                alert('somethings empty!! not gonna do it');
+                return;
             }
 
             Music.add({

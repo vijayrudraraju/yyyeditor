@@ -12,23 +12,18 @@ body {
 }
 h1 {
     text-align: center;
-    font-size: 120px;
+    font-size: 140px;
+    height: 132px;
     margin: 0px;
     padding: 0px;
     border: 0px;
 }
 h2 {
     text-align: center;
-    font-size: 25px;
+    font-size: 40px;
     margin: 0px;
     padding: 0px;
     border: 0px;
-}
-.page-header h2 {
-    font-family: 'Karla', sans-serif;
-}
-.section-header h2 {
-    font-family: 'Telex', sans-serif;
 }
 
 button, input.submit, input.button {
@@ -37,27 +32,12 @@ button, input.submit, input.button {
     background-color: lightBlue;
     margin: 10px;
 }
-#all-section button, #all-section input.submit, #all-section input.button {
-    background-color: lightBlue;
-}
-#text-section  button, #text-section input.submit, #text-section input.button {
-    background-color: lightGreen;
-}
-#images-section button, #images-section input.submit, #images-section input.button {
-    background-color: lightGrey;
-}
-#videos-section  button, #videos-section input.submit, #videos-section input.button {
-    background-color: lightYellow;
-}
-#music-section  button, #music-section input.submit, #music-section input.button {
-    background-color: lightPink;
-}
 
-a {
+.tab a {
     color: black;
     font-size: 20px;
 }
-a:hover {
+.tab a:hover {
     color: gray;
 }
 textarea {
@@ -80,15 +60,138 @@ fieldset div {
 }
 
 
-.bold {
-    font-weight: bold;
-}
 
 .container {
     position: relative;
     width: 100%;
 }
 
+.content {
+    width: 960px;
+}
+
+.page-header {
+    width: 880px;
+    padding: 0px;
+    margin-top: 5px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+.page-header h2 {
+    font-family: 'Karla', sans-serif;
+}
+.page-subheader {
+    width: 880px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+.page-subheader h2 {
+    font-size: 60px;
+    text-align: left;
+    font-family: 'Karla', sans-serif;
+}
+.homepage-section {
+    width: 880px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+.page-section {
+    width: 880px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+.page-section p {
+    font-size: 30px;
+}
+.page-section iframe {
+    width: 880px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left:auto;
+    margin-right:auto;
+}
+.page-section img {
+    width: 880px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left:auto;
+    margin-right:auto;
+}
+.page-footer {
+    width: 960px;
+    margin-top: 120px;
+    margin-bottom: 100px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+.page-footer h2, .page-footer a {
+    font-family: 'Karla', sans-serif;
+    font-size: 37px;
+    text-decoration: none;
+    color: black;
+}
+
+
+.section-header {
+    width: 880px;
+    height: 80px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: 40px;
+    margin-right: 40px;
+    border-bottom-style: solid;
+    border-color: black;
+    border-width: 1px;
+}
+.section-header h2 {
+    font-family: 'Telex', sans-serif;
+}
+.section {
+    width: 880px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+.section-list {
+    padding-top: 20px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+.section-list img {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+
+#all-section button, #all-section input.submit, #all-section input.button {
+    background-color: lightBlue;
+}
+#text-section  button, #text-section input.submit, #text-section input.button {
+    background-color: lightGreen;
+}
+#images-section button, #images-section input.submit, #images-section input.button {
+    background-color: lightGrey;
+}
+#videos-section  button, #videos-section input.submit, #videos-section input.button {
+    background-color: lightYellow;
+}
+#music-section  button, #music-section input.submit, #music-section input.button {
+    background-color: lightPink;
+}
+
+
+.bold {
+    font-weight: bold;
+}
 .tabs {
     width: 960px;
     height: 70px;
@@ -104,66 +207,49 @@ fieldset div {
     border-color: black;
     border-width: 1px;
 }
-
-.page-header {
-    width: 960px;
-    padding: 5px;
-    margin-top: 5px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.section-header {
-    width: 960px;
-    height: 80px;
-    margin-top: 30px;
-    margin-bottom: 30px;
-    margin-left: auto;
-    margin-right: auto;
-    border-bottom-style: solid;
-    border-color: black;
-    border-width: 1px;
-}
-.section {
-    width: 960px;
-    margin-top: 30px;
-    margin-bottom: 30px;
-    margin-left:auto;
-    margin-right:auto;
-}
-.section iframe {
-    width: 960px;
-    margin-top: 30px;
-    margin-bottom: 30px;
-    margin-left:auto;
-    margin-right:auto;
-}
-.section > img {
-    margin-top: 30px;
-    margin-bottom: 30px;
-    margin-left:auto;
-    margin-right:auto;
-}
-.section-list img {
-    margin-top: 30px;
-    margin-bottom: 30px;
-    margin-left:auto;
-    margin-right:auto;
-}
 .fullscreen {
-    width: 960px;
+    width: 880px;
 }
 .thumbnail {
-    width: 90px;
-    height: 90px;
+    width: 140px;
+    height: 140px;
     margin: 0px;
-}
-
-.section-list {
-    padding-top: 20px;
-    margin-top: 30px;
-    margin-bottom: 30px;
 }
 .nobullets {
     list-style-type: none;
+}
+
+.grid {
+    width: 736px;
+    padding: 0px;
+    margin: 0px;
+    list-style-type: none;
+    margin-left: auto;
+    margin-right: auto;
+    border-style: none;
+}
+.cell {
+    float: left;
+    width: 140px;
+    height: 140px;
+    padding: 0px;
+    margin: 20px;
+    border: 2px solid black; 
+}
+.cell a {
+    text-decoration: none;
+}
+.label {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    top: -162px;
+    background: white;
+    font-color: black;
+    opacity: 0.8;
+}
+.label h3 {
+    color: black;
+    padding: 1px;
+    text-decoration: none;
 }
