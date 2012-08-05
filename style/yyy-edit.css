@@ -1,0 +1,53 @@
+button, input.submit, input.button {
+    font-size: 20px;
+    border: 1px outset blue;
+    background-color: lightBlue;
+    margin: 10px;
+}
+
+
+
+.tab a {
+    color: black;
+    font-size: 20px;
+}
+.tab a:hover {
+    color: gray;
+}
+textarea {
+    width: 100%;
+}
+input[type=text] {
+    width: 400px;
+}
+ul {
+    list-style-type: square;
+    border-top-style: solid;
+    border-color: black;
+    border-width: 1px;
+}
+li {
+    margin: 10px;
+}
+fieldset div {
+    padding: 10px;
+}
+
+
+
+#all-section button, #all-section input.submit, #all-section input.button {
+    background-color: lightBlue;
+}
+#text-section  button, #text-section input.submit, #text-section input.button {
+    background-color: lightGreen;
+}
+#images-section button, #images-section input.submit, #images-section input.button {
+    background-color: lightGrey;
+}
+#videos-section  button, #videos-section input.submit, #videos-section input.button {
+    background-color: lightYellow;
+}
+#music-section  button, #music-section input.submit, #music-section input.button {
+    background-color: lightPink;
+}
+

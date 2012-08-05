@@ -114,13 +114,13 @@ $(function(){
             this.selectedId = model.id;
 
             if (model.get('text'))
-                window.open('_show/textArticle/'+this.selectedId);
+                window.open('http://www.yesyesyesmag.com/_show/textArticle/'+this.selectedId);
             else if (model.get('filenames'))
-                window.open('_show/imagesArticle/'+this.selectedId);
+                window.open('http://www.yesyesyesmag.com/_show/imagesArticle/'+this.selectedId);
             else if (model.get('videos'))
-                window.open('_show/videosArticle/'+this.selectedId);
+                window.open('http://www.yesyesyesmag.com/_show/videosArticle/'+this.selectedId);
             else if (model.get('tracks'))
-                window.open('_show/musicArticle/'+this.selectedId);
+                window.open('http://www.yesyesyesmag.com/_show/musicArticle/'+this.selectedId);
         },
         editOne: function(ev) {
             console.log('all editOne ',ev,ev.target.id);
@@ -212,7 +212,7 @@ $(function(){
 
             this.selectedId = model.id;
 
-            window.open('_show/textArticle/'+this.selectedId);
+            window.open('http://www.yesyesyesmag.com/_show/textArticle/'+this.selectedId);
         },
         newOne: function(ev) {
             console.log('text newOne ',ev,ev.target.id);
@@ -489,7 +489,7 @@ $(function(){
             var model = Images.getByCid(stringArray[2]);
             console.log(model);
 
-            window.open('_show/imagesArticle/'+model.id);
+            window.open('http://www.yesyesyesmag.com/_show/imagesArticle/'+model.id);
         },
         newOne: function(ev) {
             console.log('images newOne ',ev,ev.target.id);
@@ -866,7 +866,7 @@ $(function(){
             var model = Videos.getByCid(stringArray[2]);
             console.log(model);
 
-            window.open('_show/videosArticle/'+model.id);
+            window.open('http://www.yesyesyesmag.com/_show/videosArticle/'+model.id);
         },
         newOne: function(ev) {
             console.log('videos newOne ',ev,ev.target.id);
@@ -1196,7 +1196,7 @@ $(function(){
 
             this.selectedId = model.id;
 
-            window.open('_show/musicArticle/'+this.selectedId);
+            window.open('http://www.yesyesyesmag.com/_show/musicArticle/'+this.selectedId);
         },
         newOne: function(ev) {
             console.log('music newOne ',ev,ev.target.id);
