@@ -130,16 +130,12 @@ $(function(){
             console.log(model);
 
             if (model.get('text')) {
-                trigText();
                 window.NewText.editOne(ev);
             } else if (model.get('filenames')) {
-                trigImages();
                 window.NewImages.editOne(ev);
             } else if (model.get('videos')) {
-                trigVideos();
                 window.NewVideos.editOne(ev);
             } else if (model.get('tracks')) {
-                trigMusic();
                 window.NewMusic.editOne(ev);
             }
         },
@@ -236,23 +232,7 @@ $(function(){
             console.log('text editOne ',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
-            var model = Texts.get(stringArray[2]);
-            console.log(model);
-
-            this.selectedId = model.id;
-            this.selectedModel = model;
-
-            $('#text-new-form').hide();
-            $('#text-edit-form').show();
-            $('#text-articles-grid').hide();
-
-            $('#text-new-cover').parent().html($('#text-new-cover').parent().html());
-            $('#text-edit-title').val(model.get('title'));
-            $('#text-edit-author').val(model.get('author'));
-            $('#text-edit-main').val(model.get('text'));
-            $('#text-edit-form :hidden').val(model.get('_rev'));
-
-            this.refreshCoverAttachment();
+            window.location.href = '#/editText/'+stringArray[2];
         },
         addOne: function(model) {
             console.log(model);
@@ -373,7 +353,7 @@ $(function(){
                 Texts.get(this.selectedId).set({
                     title:$('#text-edit-title').val(),
                     author:$('#text-edit-author').val(),
-                    text:$('#text-edit-main').val(),
+                    text:HtmlEncode($('#text-edit-main').val()),
                     covername:self.coverName
                 });
             } else {
@@ -382,7 +362,7 @@ $(function(){
                 Texts.get(this.selectedId).set({
                     title:$('#text-edit-title').val(),
                     author:$('#text-edit-author').val(),
-                    text:$('#text-edit-main').val()
+                    text:HtmlEncode($('#text-edit-main').val())
                 });
             }
 
@@ -514,24 +494,7 @@ $(function(){
             console.log('images editOne ',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
-            var model = Images.get(stringArray[2]);
-            console.log(model);
-
-            this.selectedModel = model;
-            this.selectedId = model.id;
-
-            $('#images-new-form').hide();
-            $('#images-edit-form').show();
-            $('#images-articles-grid').hide();
-
-            $('#images-edit-cover').parent().html($('#images-edit-cover').parent().html());
-            $('#images-edit-title').val(model.get('title'));
-            $('#images-edit-author').val(model.get('author'));
-            $('#images-edit-main').parent().html($('#images-edit-main').parent().html());
-            $('#images-edit-form :hidden').val(model.get('_rev'));
-
-            this.refreshImagesAttachments();
-            this.refreshCoverAttachment();
+            window.location.href = '#/editImages/'+stringArray[2];
         },
         addOne: function(model) {
             console.log(model);
@@ -622,7 +585,6 @@ $(function(){
             for (var i=0;i<files.length;i++) {
                 $('#images-new-files').append('<li>'+files[i].name);
                 $('#images-new-files').append('<img class="thumbnail" id="images-new-preview-'+i+'" alt="image"/></li>');
-                //$('#images-new-files').append('<button type="button" class="images-delete-button" id="images-new-new-delete-'+self.selectedModel.cid+'-'+i+'">delete</button></li>');
                 $('#images-new-preview-'+i)[0].file = files[i];
                 var reader = new FileReader();
                 reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#images-new-preview-'+i)[0]);
@@ -635,7 +597,7 @@ $(function(){
                 console.log(files);
                 for (var i=0;i<files.length;i++) {
                     $('#images-edit-files').append('<li>'+files[i]);
-                    $('#images-edit-files').append('<img class="thumbnail" id="images-files-'+i+'" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+files[i]+'" alt="image"/>');
+                    $('#images-edit-files').append('<img class="thumbnail" id="images-files-'+i+'" src="/yyy/_design/edit/_rewrite/'+_DBNAME+'/'+self.selectedModel.id+'/'+files[i]+'" alt="image"/>');
                     $('#images-edit-files').append('<button type="button" class="images-delete-button" id="images-edit-old-delete-'+self.selectedModel.id+'-'+i+'">delete</button></li>');
                 }
             }
@@ -644,7 +606,6 @@ $(function(){
             for (var i=0;i<files.length;i++) {
                 $('#images-edit-files').append('<li>'+files[i].name);
                 $('#images-edit-files').append('<img class="thumbnail" id="images-edit-preview-'+i+'" alt="image"/></li>');
-                //$('#images-edit-files').append('<button type="button" class="images-delete-button" id="images-edit-new-delete-'+self.selectedModel.cid+'-'+i+'">delete</button></li>');
                 $('#images-edit-preview-'+i)[0].file = files[i];
                 var reader = new FileReader();
                 reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#images-edit-preview-'+i)[0]);
@@ -760,11 +721,6 @@ $(function(){
             }
 
 
-/*
-            Images.get(id).set({
-                filenames:filenames
-            });
-            */
 
             Images.get(id).save({},{
                 success: function() { 
@@ -891,25 +847,7 @@ $(function(){
             console.log('videos editOne ',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
-            var model = Videos.get(stringArray[2]);
-            console.log(model);
-
-            this.selectedId = model.id;
-            this.selectedModel = model;
-
-            $('#videos-new-form').hide();
-            $('#videos-edit-form').show();
-            $('#videos-articles-grid').hide();
-
-            $('#videos-edit-cover').parent().html($('#videos-edit-cover').parent().html());
-            $('#videos-edit-title').val(model.get('title'));
-            $('#videos-edit-author').val(model.get('author'));
-            $('#videos-edit-code').val('');
-            this.videoCodes = model.get('videos');
-            $('#videos-edit-form :hidden').val(model.get('_rev'));
-
-            this.refreshVideosAttachments();
-            this.refreshCoverAttachment();
+            window.location.href = '#/editVideos/'+stringArray[2];
         },
         addOne: function(model) {
             console.log(model);
@@ -1220,24 +1158,7 @@ $(function(){
             console.log('music editOne ',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
-            var model = Music.get(stringArray[2]);
-            console.log(model);
-
-            this.selectedId = model.id;
-            this.selectedModel = model;
-
-            $('#music-new-form').hide();
-            $('#music-edit-form').show();
-            $('#music-articles-grid').hide();
-
-            $('#music-edit-cover').parent().html($('#music-edit-cover').parent().html());
-            $('#music-edit-title').val(model.get('title'));
-            $('#music-edit-author').val(model.get('author'));
-            $('#music-edit-code').val(model.get('tracks')[0]);
-            this.trackCodes = model.get('tracks');
-            $('#music-edit-form :hidden').val(model.get('_rev'));
-
-            this.refreshCoverAttachment();
+            window.location.href = '#/editMusic/'+stringArray[2];
         },
         addOne: function(model) {
             console.log(model);
@@ -1448,16 +1369,211 @@ $(function(){
 
 
 
+    window.Router = Backbone.Router.extend({
+        routes: {
+            "editText/:page": "editText",
+            "editImages/:page": "editImages",
+            "editVideos/:page": "editVideos",
+            "editMusic/:page": "editMusic",
+            "all": "trigAll",
+            "text": "trigText",
+            "images": "trigImages",
+            "videos": "trigVideos",
+            "music": "trigMusic",
+            "*all": "trigAll"
+        },
+        editText: function(page) {
+            console.log(page, this);
+            this.trigText();
 
+            console.log('editText route',page);
 
+            var model = Texts.get(page);
+            console.log(model);
 
+            NewText.selectedId = model.id;
+            NewText.selectedModel = model;
 
+            $('#text-new-form').hide();
+            $('#text-edit-form').show();
+            $('#text-articles-grid').hide();
 
+            $('#text-new-cover').parent().html($('#text-new-cover').parent().html());
+            $('#text-edit-title').val(model.get('title'));
+            $('#text-edit-author').val(model.get('author'));
+            $('#text-edit-main').val(model.get('text'));
+            $('#text-edit-form :hidden').val(model.get('_rev'));
 
+            NewText.refreshCoverAttachment();
+        },
+        editImages: function(page) {
+            this.trigImages();
 
+            var model = Images.get(page);
+            console.log(model);
 
+            NewImages.selectedModel = model;
+            NewImages.selectedId = model.id;
 
-    trigAll();
+            $('#images-new-form').hide();
+            $('#images-edit-form').show();
+            $('#images-articles-grid').hide();
+
+            $('#images-edit-cover').parent().html($('#images-edit-cover').parent().html());
+            $('#images-edit-title').val(model.get('title'));
+            $('#images-edit-author').val(model.get('author'));
+            $('#images-edit-main').parent().html($('#images-edit-main').parent().html());
+            $('#images-edit-form :hidden').val(model.get('_rev'));
+
+            NewImages.refreshImagesAttachments();
+            NewImages.refreshCoverAttachment();
+        },
+        editVideos: function(page) {
+            this.trigVideos();
+
+            var model = Videos.get(page);
+            console.log(model);
+
+            NewVideos.selectedId = model.id;
+            NewVideos.selectedModel = model;
+
+            $('#videos-new-form').hide();
+            $('#videos-edit-form').show();
+            $('#videos-articles-grid').hide();
+
+            $('#videos-edit-cover').parent().html($('#videos-edit-cover').parent().html());
+            $('#videos-edit-title').val(model.get('title'));
+            $('#videos-edit-author').val(model.get('author'));
+            $('#videos-edit-code').val('');
+            NewVideos.videoCodes = model.get('videos');
+            $('#videos-edit-form :hidden').val(model.get('_rev'));
+
+            NewVideos.refreshVideosAttachments();
+            NewVideos.refreshCoverAttachment();
+        },
+        editMusic: function(page) {
+            var model = Music.get(page);
+            console.log(model);
+
+            NewMusic.selectedId = model.id;
+            NewMusic.selectedModel = model;
+
+            $('#music-new-form').hide();
+            $('#music-edit-form').show();
+            $('#music-articles-grid').hide();
+
+            $('#music-edit-cover').parent().html($('#music-edit-cover').parent().html());
+            $('#music-edit-title').val(model.get('title'));
+            $('#music-edit-author').val(model.get('author'));
+            $('#music-edit-code').val(model.get('tracks')[0]);
+            NewMusic.trackCodes = model.get('tracks');
+            $('#music-edit-form :hidden').val(model.get('_rev'));
+
+            this.refreshCoverAttachment();
+        },
+        trigAll: function() {
+            window.NewAll.refresh();
+
+            $('.section-header h2').html('all articles');
+            $('#all-link').addClass('bold');
+
+            $('#all-section').show();
+            $('#text-section').hide();
+            $('#images-section').hide();
+            $('#videos-section').hide();
+            $('#music-section').hide();
+
+            $('#text-link').removeClass('bold');
+            $('#images-link').removeClass('bold');
+            $('#videos-link').removeClass('bold');
+            $('#music-link').removeClass('bold');
+        },
+        trigText: function() {
+            window.NewText.refresh();
+
+            $('.section-header h2').html('text articles');
+            $('#text-link').addClass('bold');
+
+            $('#all-section').hide();
+            $('#text-section').show();
+            $('#images-section').hide();
+            $('#videos-section').hide();
+            $('#music-section').hide();
+
+            $('#text-new-form').hide();
+            $('#text-edit-form').hide();
+            $('#text-articles-grid').show();
+
+            $('#all-link').removeClass('bold');
+            $('#images-link').removeClass('bold');
+            $('#videos-link').removeClass('bold');
+            $('#music-link').removeClass('bold');
+       },
+       trigImages: function() {
+            window.NewImages.refresh();
+
+            $('.section-header h2').html('images articles');
+            $('#images-link').addClass('bold');
+
+            $('#all-section').hide();
+            $('#text-section').hide();
+            $('#images-section').show();
+            $('#videos-section').hide();
+            $('#music-section').hide();
+
+            $('#images-new-form').hide();
+            $('#images-edit-form').hide();
+            $('#images-articles-grid').show();
+
+            $('#all-link').removeClass('bold');
+            $('#text-link').removeClass('bold');
+            $('#videos-link').removeClass('bold');
+            $('#music-link').removeClass('bold');
+        },
+        trigVideos: function() {
+            $('.section-header h2').html('videos articles');
+            $('#videos-link').addClass('bold');
+
+            $('#all-section').hide();
+            $('#text-section').hide();
+            $('#images-section').hide();
+            $('#videos-section').show();
+            $('#music-section').hide();
+
+            $('#videos-new-form').hide();
+            $('#videos-edit-form').hide();
+            $('#videos-articles-grid').show();
+
+            $('#all-link').removeClass('bold');
+            $('#text-link').removeClass('bold');
+            $('#images-link').removeClass('bold');
+            $('#music-link').removeClass('bold');
+        },
+        trigMusic: function() {
+            $('.section-header h2').html('music articles');
+            $('#music-link').addClass('bold');
+
+            $('#all-section').hide();
+            $('#text-section').hide();
+            $('#images-section').hide();
+            $('#videos-section').hide();
+            $('#music-section').show();
+
+            $('#music-new-form').hide();
+            $('#music-edit-form').hide();
+            $('#music-articles-grid').show();
+
+            $('#all-link').removeClass('bold');
+            $('#text-link').removeClass('bold');
+            $('#images-link').removeClass('bold');
+            $('#videos-link').removeClass('bold');
+        }
+    });
+    window.NewRouter = new Router();
+
+    Backbone.history.start();
+
+    //trigAll();
 });
 
 
@@ -1469,7 +1585,7 @@ $(function(){
 
 
 
-function trigAll() {
+/*function trigAll() {
     window.NewAll.refresh();
 
     $('.section-header h2').html('all articles');
@@ -1508,6 +1624,8 @@ function trigText() {
     $('#music-link').removeClass('bold');
 
 }
+*/
+/*
 function trigImages() {
     window.NewImages.refresh();
 
@@ -1529,6 +1647,8 @@ function trigImages() {
     $('#videos-link').removeClass('bold');
     $('#music-link').removeClass('bold');
 }
+*/
+/*
 function trigVideos() {
     $('.section-header h2').html('videos articles');
     $('#videos-link').addClass('bold');
@@ -1548,6 +1668,8 @@ function trigVideos() {
     $('#images-link').removeClass('bold');
     $('#music-link').removeClass('bold');
 }
+*/
+/*
 function trigMusic() {
     $('.section-header h2').html('music articles');
     $('#music-link').addClass('bold');
@@ -1567,3 +1689,4 @@ function trigMusic() {
     $('#images-link').removeClass('bold');
     $('#videos-link').removeClass('bold');
 }
+*/
