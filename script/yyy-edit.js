@@ -54,6 +54,7 @@ $(function(){
     window.YYYCollection['music'] = new YYYCollectionClass['music'];
 
 
+    /*
     window.PageCollection = Backbone.Collection.extend({ 
         model: PageModel,
         db: {
@@ -90,6 +91,7 @@ $(function(){
     window.Images = new ImagesCollection;
     window.Videos = new VideosCollection;
     window.Music = new MusicCollection;
+    */
 
 
 
@@ -98,9 +100,10 @@ $(function(){
 
 
 
+    /*
     window.NewAllView = Backbone.View.extend({
-        selectedId: 0,
-        selectedModel: {},
+        //selectedId: 0,
+        //selectedModel: {},
         initialize: function() {
             this.selectedId = 0;
             this.selectedModel = {};
@@ -206,23 +209,24 @@ $(function(){
         },
     });
     window.NewAll = new NewAllView({ el: $('#all-section')  });;
+    */
 
 
 
     window.YYYViewClass = Backbone.View.extend({
-        selectedId: 0,
-        selectedModel: {},
-        coverName: [],
-        type: 'all',
+        //selectedId: 0,
+        //selectedModel: {},
+        //coverName: [],
+        //type: 'all',
         initialize: function() {
             this.selectedId = 0;
             this.selectedModel = {};
-            this.coverName = [];
-            this.type = 'all';
-            console.log('this.type '+this.type);
+            this.coverName = []; 
+            this.type = 'all'; 
+            console.log('initialize', this.type);
 
             YYYCollection[this.type].on('reset', this.onReset, this);
-            YYYCollection[this.type].fetch({success: function() { console.log(this.type+' initial fetch success');}});
+            YYYCollection[this.type].fetch({success: function(coll, resp) { console.log('YYYViewClass initialize fetch success');}});
 
             var events = {};
             var tempStr = 'click .'+this.type+'-';
@@ -238,16 +242,16 @@ $(function(){
             this.delegateEvents(events);
         },
         refresh: function() {
-            YYYCollection[this.type].fetch({success: function() { console.log(this.type+' refresh fetch success');}});
+            YYYCollection[this.type].fetch({success: function() { console.log(this.type, 'refresh fetch success');}});
         },
         onReset: function(coll,resp) {
-            console.log(this.type+' onReset');
+            console.log(this.type, 'onReset');
 
             $('#'+this.type+'-articles-grid ul').html('');
-            YYYCollection[this.type].each(this.addOne);
+            YYYCollection[this.type].each(this.addOne, this);
         },
         addOne: function(model) {
-            console.log(model);
+            console.log(model, model.get('title'), 'addOne', '#'+this.type+'-articles-grid ul');
             $('#'+this.type+'-articles-grid ul').append(
                 '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="'+this.type+'-edit-button" id="'+this.type+'-edit-'+model.id+'">edit</button><button type="button" class="'+this.type+'-view-button" id="'+this.type+'-view-'+model.cid+'">view</button></li>'
             );
@@ -260,8 +264,9 @@ $(function(){
             console.log(model);
 
             this.selectedId = model.id;
+            this.selectedTemplate = model.get('template');
 
-            window.open('/'+_DBNAME+'/_design/one/_show/'+this.type+'Article/'+this.selectedId);
+            window.open('/'+_DBNAME+'/_design/one/_show/'+this.selectedTemplate+'Article/'+this.selectedId);
         },
         editOne: function(ev) {
             console.log(this.type+' editOne ',ev,ev.target.id);
@@ -459,6 +464,8 @@ $(function(){
             });
         }
     });
+    window.YYYAllViewClass = window.YYYViewClass.extend({});
+    window.AllView = new YYYAllViewClass({ el: $('#all-section') });
 
 
 
@@ -705,10 +712,11 @@ $(function(){
         }
     });
     */
-    window.NewTextView = window.YYYViewClass.extend({
+    window.YYYTextViewClass = window.YYYViewClass.extend({
         type: 'text'
     });
-    window.NewText = new NewTextView({ el: $('#text-section') });
+    window.TextView = new YYYTextViewClass({ el: $('#text-section') });
+    /*
     $('#text-new-form').submit(function(e) {
         e.preventDefault(); 
         window.NewText.saveNewToServer(); 
@@ -717,6 +725,7 @@ $(function(){
         e.preventDefault(); 
         window.NewText.saveOldToServer(); 
     });
+    */
 
 
 
@@ -725,6 +734,7 @@ $(function(){
 
 
 
+    /*
     window.NewImagesView = Backbone.View.extend({
         selectedId: 0,
         fileNames: [],
@@ -813,11 +823,9 @@ $(function(){
 
             console.log(imageIndex,coverIndex);
 
-/*
-            if (coverIndex < imageIndex) {
-                imageIndex++;
-            }
-            */
+            //if (coverIndex < imageIndex) {
+            //    imageIndex++;
+            //}
 
             var name = filenames.splice(imageIndex,1);
             console.log(name, filenames);
@@ -1073,6 +1081,7 @@ $(function(){
         e.preventDefault(); 
         window.NewImages.saveOldToServer(); 
     });
+    */
 
 
 
@@ -1081,6 +1090,7 @@ $(function(){
 
 
 
+        /*
     window.NewVideosView = Backbone.View.extend({
         selectedId: 0,
         selectedModel: {},
@@ -1385,6 +1395,7 @@ $(function(){
         e.preventDefault(); 
         window.NewVideos.saveOldToServer(); 
     });
+    */
 
 
 
@@ -1395,6 +1406,7 @@ $(function(){
 
 
 
+        /*
     window.NewMusicView = Backbone.View.extend({
         selectedId: 0,
         selectedModel: {},
@@ -1666,6 +1678,7 @@ $(function(){
         e.preventDefault(); 
         window.NewMusic.saveOldToServer(); 
     });
+    */
 
 
 
@@ -1682,17 +1695,20 @@ $(function(){
             "music": "trigMusic",
             "*all": "trigAll"
         },
+        initialize: function() {
+            console.log('router initialize');
+        },
         editText: function(page) {
             console.log(page, this);
             this.trigText();
 
             console.log('editText route',page);
 
-            var model = Texts.get(page);
+            var model = YYYCollection['text'].get(page);
             console.log(model);
 
-            NewText.selectedId = model.id;
-            NewText.selectedModel = model;
+            TextView.selectedId = model.id;
+            TextView.selectedModel = model;
 
             $('#text-new-form').hide();
             $('#text-edit-form').show();
@@ -1704,7 +1720,7 @@ $(function(){
             $('#text-edit-main').val(model.get('text'));
             $('#text-edit-form :hidden').val(model.get('_rev'));
 
-            NewText.refreshCoverAttachment();
+            TextView.refreshCoverAttachment();
         },
         editImages: function(page) {
             this.trigImages();
@@ -1772,7 +1788,9 @@ $(function(){
             this.refreshCoverAttachment();
         },
         trigAll: function() {
-            window.NewAll.refresh();
+            console.log('trigAll');
+
+            window.AllView.refresh();
 
             $('.section-header h2').html('all articles');
             $('#all-link').addClass('bold');
@@ -1789,7 +1807,9 @@ $(function(){
             $('#music-link').removeClass('bold');
         },
         trigText: function() {
-            window.NewText.refresh();
+            console.log('trigText');
+
+            window.TextView.refresh();
 
             $('.section-header h2').html('text articles');
             $('#text-link').addClass('bold');
