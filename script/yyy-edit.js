@@ -13,8 +13,6 @@ $(function(){
     window.PageModel= Backbone.Model.extend({
         url: '/pages'
     }); 
-
-
     window.YYYCollectionClass = {};
     window.YYYCollectionClass['all'] = Backbone.Collection.extend({
         model: PageModel,
@@ -22,6 +20,38 @@ $(function(){
             view: "all" 
         }
     });
+    window.YYYCollection = {};
+    window.YYYCollection['all'] = new YYYCollectionClass['all'];
+
+    function generateToggler(array) {
+        return function(showIndex) {
+            for (var i=0;i<array.length;i++) {
+                if (i === showIndex) {
+                    $(array[i]).show();
+                } else {
+                    $(array[i]).hide();
+                }
+            }
+        };
+    }
+    var createArray = ['#create-text-section', '#create-image-section', '#create-video-section', '#create-music-section'];
+    var createToggle = generateToggler(createArray);
+
+    $('body').hashchange(function (e, newHash) {
+        console.log('hashchange',e,newHash);
+        if (newHash === '/text') {
+            createToggle(0);
+        } else if (newHash === '/image') {
+            createToggle(1);
+        } else if (newHash === '/video') {
+            createToggle(2);
+        } else if (newHash === '/music') {
+            createToggle(3);
+        }
+    });
+    $.hash.init();
+
+    /*
     window.YYYCollectionClass['text'] = Backbone.Collection.extend({
         model: PageModel,
         db: {
@@ -46,12 +76,13 @@ $(function(){
             view: "music" 
         }
     });
-    window.YYYCollection = {};
-    window.YYYCollection['all'] = new YYYCollectionClass['all'];
+    */
+    /*
     window.YYYCollection['text'] = new YYYCollectionClass['text'];
     window.YYYCollection['images'] = new YYYCollectionClass['images'];
     window.YYYCollection['videos'] = new YYYCollectionClass['videos'];
     window.YYYCollection['music'] = new YYYCollectionClass['music'];
+    */
 
 
     /*
@@ -85,7 +116,9 @@ $(function(){
             view: "music" 
         }
     });
+    */
 
+    /*
     window.Pages = new PageCollection;
     window.Texts = new TextCollection;
     window.Images = new ImagesCollection;
@@ -214,41 +247,38 @@ $(function(){
 
 
     window.YYYViewClass = Backbone.View.extend({
-        //selectedId: 0,
-        //selectedModel: {},
-        //coverName: [],
-        //type: 'all',
+        events: {
+            "click .view-button" : "viewOne",
+            "click .new-button" : "newOne",
+            "click .edit-button" : "editOne"
+        },
         initialize: function() {
+            // helpful state and identity variables
             this.selectedId = 0;
             this.selectedModel = {};
             this.coverName = []; 
-            this.type = 'all'; 
-            console.log('initialize', this.type);
 
-            YYYCollection[this.type].on('reset', this.onReset, this);
-            YYYCollection[this.type].fetch({success: function(coll, resp) { console.log('YYYViewClass initialize fetch success');}});
+            console.log('A YYYViewClass initialize', this.type);
 
-            var events = {};
-            var tempStr = 'click .'+this.type+'-';
-            events[tempStr+'view-button'] = 'viewOne';
-            events[tempStr+'edit-button'] = 'editOne';
+            // fetch data
+            window.YYYCollection['all'].on('reset', this.onReset, this);
+            window.YYYCollection['all'].fetch({success: function(coll, resp) { 
+                console.log('YYYViewClass initialize fetch success');
+            }});
 
-            tempStr = 'click #'+this.type+'-';
-            events[tempStr+'new-button'] = 'newOne';
-
-            tempStr = 'change #'+this.type+'-';
-            events[tempStr+'new-cover'] = 'coverFileChange';
-            events[tempStr+'edit-cover'] = 'editCoverFileChange';
-            this.delegateEvents(events);
+            // initialize view
+            $('#view-interface').show();
+            $('#create-interface').hide();
+            $('#edit-interface').hide();
         },
         refresh: function() {
-            YYYCollection[this.type].fetch({success: function() { console.log(this.type, 'refresh fetch success');}});
+            window.YYYCollection['all'].fetch({success: function() { console.log(this.type, 'refresh fetch success');}});
         },
         onReset: function(coll,resp) {
             console.log(this.type, 'onReset');
 
             $('#'+this.type+'-articles-grid ul').html('');
-            YYYCollection[this.type].each(this.addOne, this);
+            window.YYYCollection['all'].each(this.addOne, this);
         },
         addOne: function(model) {
             console.log(model, model.get('title'), 'addOne', '#'+this.type+'-articles-grid ul');
@@ -260,7 +290,7 @@ $(function(){
             console.log(this.type+' viewOne ',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
-            var model = YYYCollection[this.type].getByCid(stringArray[2]);
+            var model = window.YYYCollection['all'].getByCid(stringArray[2]);
             console.log(model);
 
             this.selectedId = model.id;
@@ -275,16 +305,21 @@ $(function(){
             window.location.href = '#/editText/'+stringArray[2];
         },
         newOne: function(ev) {
-            console.log(this.type+' newOne ',ev,ev.target.id);
+            console.log('trigger newOne ',ev,ev.target.id);
 
             $('#'+this.type+'-new-cover').parent().html($('#'+this.type+'-new-cover').parent().html());
             $('#'+this.type+'-new-title').val('');
             $('#'+this.type+'-new-author').val('');
             $('#'+this.type+'-new-main').val('');
 
-            $('#'+this.type+'-new-form').show();
-            $('#'+this.type+'-edit-form').hide();
-            $('#'+this.type+'-articles-grid').hide();
+            $('#create-interface').show();
+            $('#view-interface').hide();
+            $('#edit-interface').hide();
+
+            $('#create-text-section').show();
+            $('#create-image-section').hide();
+            $('#create-video-section').hide();
+            $('#create-music-section').hide();
 
             this.selectedId = 0;
             this.selectedModel = {};
@@ -464,9 +499,8 @@ $(function(){
             });
         }
     });
-    window.YYYAllViewClass = window.YYYViewClass.extend({});
-    window.AllView = new YYYAllViewClass({ el: $('#all-section') });
-
+    //window.YYYAllViewClass = window.YYYViewClass.extend({});
+    window.AllView = new YYYViewClass({ el: $('#view-section') });
 
 
     /*
@@ -712,10 +746,12 @@ $(function(){
         }
     });
     */
+        /*
     window.YYYTextViewClass = window.YYYViewClass.extend({
         type: 'text'
     });
     window.TextView = new YYYTextViewClass({ el: $('#text-section') });
+    */
     /*
     $('#text-new-form').submit(function(e) {
         e.preventDefault(); 
@@ -1682,6 +1718,7 @@ $(function(){
 
 
 
+        /*
     window.Router = Backbone.Router.extend({
         routes: {
             "editText/:page": "editText",
@@ -1892,6 +1929,7 @@ $(function(){
     window.NewRouter = new Router();
 
     Backbone.history.start();
+    */
 
     //trigAll();
 });

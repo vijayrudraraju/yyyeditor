@@ -14,19 +14,23 @@
         <script type="text/javascript" src="/_utils/script/json2.js"></script>
         <script type="text/javascript" src="/_utils/script/jquery.js"></script>
         <script type="text/javascript" src="/_utils/script/jquery.couch.js"></script>
-        <script type="text/javascript" src="script/async.js"></script>
+
+        <!--<script type="text/javascript" src="script/async.js"></script>-->
         <script type="text/javascript" src="script/underscore.js"></script>
         <script type="text/javascript" src="script/backbone.js"></script>
         <script type="text/javascript" src="script/backbone-couchdb.js"></script>
-        <script src="script/jquery.form.js"></script>
+        <script type="text/javascript" src="script/jquery.form.js"></script>
+        <script type="text/javascript" src="script/hash.js"></script>
+        <script type="text/javascript" src="script/jquery.hash.js"></script>
 
         <script src="script/yyy-edit.js"></script>
     </head>
 
     <body>
         <div class="container">
+            <div id="content" class="content">
 
-            <div class="content">
+
 
                 <div class="page-header">
                     <a href=''>
@@ -35,452 +39,219 @@
                     </a>
                 </div>
 
-                <!--<div class="tabs">
-                    <div class="tab"><a id="all-link" href="#/all">all types</a></div>
-                    <div class="tab"><a id="text-link" href="#/text">text</a></div>
-                    <div class="tab"><a id="images-link" href="#/images">images</a></div>
-                    <div class="tab"><a id="videos-link" href="#/videos">videos</a></div>
-                    <div class="tab"><a id="music-link" href="#/music">music</a></div>
-                </div>-->
+
 
                 <div class="section-header">
                     <h2>all articles</h2>
                 </div>
 
-                <div class="edit-interface">
-                    <div id="all-section" class="section">
 
-                        <div id="all-articles-grid" class="subsection">
+
+                <!-- view all articles -->
+                <div id="view-interface" class="interface">
+                    <div id="view-section" class="section">
+                        <div id="view-articles-grid" class="subsection">
+
                             <button type="button" id="new-btn" class="new-button">new article</button>
-                            <!--<button type="button" id="images-new-button" class="all-new-button">new images article</button>
-                            <button type="button" id="videos-new-button" class="all-new-button">new videos article</button>
-                            <button type="button" id="music-new-button" class="all-new-button">new music article</button>-->
                             <ul class="section-list">
                             </ul>
-                        </div>
 
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- create an article -->
+                <div class="create-interface" class="interface">
+                    <div class="tabs">
+                        <div class="tab"><a id="text-link" href="#/text">text</a></div>
+                        <div class="tab"><a id="images-link" href="#/image">image</a></div>
+                        <div class="tab"><a id="videos-link" href="#/video">video</a></div>
+                        <div class="tab"><a id="music-link" href="#/music">music</a></div>
                     </div>
 
 
 
-                    <!--<div id="text-section" class="section">
-
-                        <form id="text-new-form" class="subsection">
+                    <div id="create-text-section" class="section">
+                        <form id="create-text-form" class="subsection">
                             <fieldset>
-                                <legend>new text form</legend>
-
+                                <legend>create text</legend>
                                 <div>
-                                    <label for="text-new-cover">new cover image</label>
+                                    <label for="create-text-cover">new cover image</label>
                                     <div>
-                                        <input type="file" id="text-new-cover" name="_attachments"/>
-                                        <ul id="text-new-cover-preview">
+                                        <input type="file" id="create-text-cover" name="_attachments"/>
+                                       <ul id="create-text-cover-preview">
                                         </ul>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="text-new-title">new text title</label>
+                                    <label for="create-text-title">new text title</label>
                                     <div>
-                                        <input id="text-new-title" type="text" placeholder="text title" name="title"/>
+                                        <input id="create-text-title" type="text" placeholder="text title" name="title"/>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="text-new-author">new text author</label>
+                                    <label for="create-text-author">new text author</label>
                                     <div>
-                                        <input id="text-new-author" type="text" placeholder="text author" name="author"/>
+                                        <input id="create-text-author" type="text" placeholder="text author" name="author"/>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="text-new-main">new main text</label>
+                                    <label for="create-text-main">new main text</label>
                                     <div>
-                                        <textarea id="text-new-main" placeholder="main text" name="text" rows="20"></textarea>
+                                        <textarea id="create-text-main" placeholder="main text" name="text" rows="20"></textarea>
                                     </div>
                                 </div>
-
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="add new article"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
-
                             </fieldset>
                         </form>
-
-                        <form id="text-edit-form" class="subsection">
-                            <fieldset>
-                                <legend>edit text form</legend>
-
-                                <div>
-                                    <label for="text-edit-cover">edit cover image</label>
-                                    <div>
-                                        <input type="file" id="text-edit-cover" name="_attachments"/> 
-                                        <ul id="text-edit-cover-preview">
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="text-edit-title">edit text title</label>
-                                    <div>
-                                        <input id="text-edit-title" type="text" placeholder="text title" name="title"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="text-edit-author">edit text author</label>
-                                    <div>
-                                        <input id="text-edit-author" type="text" placeholder="text author" name="author"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="text-edit-main">edit main text</label>
-                                    <div>
-                                        <textarea id="text-edit-main" placeholder="main text" name="text" rows="20"></textarea>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div>
-                                        <input type="submit" class="submit" value="save modified article"/>
-                                        <input type="hidden" name="_rev"/>
-                                    </div>
-                                </div>
-
-                            </fieldset>
-                        </form>
-
-                        <div id="text-articles-grid"> 
-                            <button type="button" id="text-new-button">new text article</button>
-                            <ul class="section-list">
-                            </ul>
-                        </div>
-
                     </div>
 
 
 
-                    <div id="images-section" class="section">
-
-                        <form id="images-new-form" action="" method="post" class="">
+                    <div id="create-image-section" class="section">
+                        <form id="create-image-form" action="" method="post" class="">
                             <fieldset>
-                                <legend>new images form</legend>
-
+                                <legend>create image</legend>
                                 <div>
-                                    <label for="images-new-cover">new cover image</label>
+                                    <label for="create-image-cover">new cover image</label>
                                     <div>
-                                        <input type="file" id="images-new-cover" name="_attachments"/>
-                                        <ul id="images-new-cover-preview">
+                                        <input type="file" id="create-image-cover" name="_attachments"/>
+                                        <ul id="create-image-cover-preview">
                                         </ul>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="images-new-title">new images title</label>
+                                    <label for="create-image-title">new images title</label>
                                     <div>
-                                        <input id="images-new-title" type="text" placeholder="images title"/>
+                                        <input id="create-image-title" type="text" placeholder="images title"/>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="images-new-author">new images author</label>
+                                    <label for="create-image-author">new images author</label>
                                     <div>
-                                        <input id="images-new-author" type="text" placeholder="images author"/>
+                                        <input id="create-image-author" type="text" placeholder="images author"/>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="images-new-main">new main images</label>
+                                    <label for="create-image-main">new main images</label>
                                     <div>
-                                        <input type="file" id="images-new-main" name="_attachments" multiple=""/>
-                                        <ul id="images-new-files">
+                                        <input type="file" id="create-image-main" name="_attachments" multiple=""/>
+                                        <ul id="create-image-files">
                                         </ul>
                                     </div>
                                 </div>
-
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="add new article"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
-
                             </fieldset>
                         </form>
-
-                        <form id="images-edit-form" class="subsection">
-                            <fieldset>
-                                <legend>edit images form</legend>
-
-                                <div>
-                                    <label for="images-edit-cover">edit cover image</label>
-                                    <div>
-                                        <input type="file" id="images-edit-cover" name="_attachments"/>
-                                        <ul id="images-edit-cover-preview">
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="images-edit-title">edit images title</label>
-                                    <div>
-                                        <input id="images-edit-title" type="text" placeholder="images title" name="title"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="images-edit-author">edit text author</label>
-                                    <div>
-                                        <input id="images-edit-author" type="text" placeholder="images author" name="author"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="images-edit-main">edit main images</label>
-                                    <div>
-                                        <input type="file" id="images-edit-main" name="_attachments" multiple=""/>
-                                        <ul id="images-edit-files">
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div>
-                                        <input type="submit" class="submit" value="save modified article"/>
-                                        <input type="hidden" name="_rev"/>
-                                    </div>
-                                </div>
-
-                            </fieldset>
-                        </form>
-
-                        <div id="images-articles-grid">
-                            <button type="button" id="images-new-button">new images article</button>
-                            <ul class="section-list">
-                            </ul>
-                        </div>
-
                     </div>
 
 
 
-                    <div id="videos-section" class="section">
-
-                        <form id="videos-new-form" class="subsection">
+                    <div id="create-video-section" class="section">
+                        <form id="create-video-form" class="subsection">
                             <fieldset>
-                                <legend>new videos form</legend>
-
+                                <legend>create video</legend>
                                 <div>
-                                    <label for="videos-new-cover">new cover image</label>
+                                    <label for="create-video-cover">new cover image</label>
                                     <div>
-                                        <input type="file" id="videos-new-cover" name="_attachments"/>
-                                        <ul id="videos-new-cover-preview">
+                                        <input type="file" id="create-video-cover" name="_attachments"/>
+                                        <ul id="create-video-cover-preview">
                                         </ul>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="videos-new-title">new videos title</label>
+                                    <label for="create-video-title">new videos title</label>
                                     <div>
-                                        <input id="videos-new-title" type="text" placeholder="videos title" name="title"/>
+                                        <input id="create-video-title" type="text" placeholder="videos title" name="title"/>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="videos-new-author">new videos author</label>
+                                    <label for="create-video-author">new videos author</label>
                                     <div>
-                                        <input id="videos-new-author" type="text" placeholder="videos author" name="author"/>
+                                        <input id="create-video-author" type="text" placeholder="videos author" name="author"/>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="videos-new-code">new videos embed code</label>
+                                    <label for="create-video-code">new videos embed code</label>
                                     <div>
-                                        <input id="videos-new-code" type="text" placeholder="videos code" name="video"/>
-                                        <button type="button" class="videos-add-button" id="videos-new-add">add video</button>
-                                        <ul id="videos-new-codes" class="nobullets">
+                                        <input id="create-video-code" type="text" placeholder="videos code" name="video"/>
+                                        <button type="button" class="videos-add-button" id="create-video-add">add video</button>
+                                        <ul id="create-video-codes" class="nobullets">
                                         </ul>
                                     </div>
                                 </div>
-
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="add new article"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
-
                             </fieldset>
                         </form>
-
-                        <form id="videos-edit-form" class="subsection">
-                            <fieldset>
-                                <legend>edit videos form</legend>
-
-                                <div>
-                                    <label for="videos-edit-cover">new cover image</label>
-                                    <div>
-                                        <input type="file" id="videos-edit-cover" name="_attachments"/>
-                                        <ul id="videos-edit-cover-preview">
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="videos-edit-title">edit videos title</label>
-                                    <div>
-                                        <input id="videos-edit-title" type="text" placeholder="videos title" name="title"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="videos-edit-author">edit videos author</label>
-                                    <div>
-                                        <input id="videos-edit-author" type="text" placeholder="videos author" name="author"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="videos-edit-code">edit video embed code</label>
-                                    <div>
-                                        <input id="videos-edit-code" type="text" placeholder="videos code" name="video"/>
-                                        <button type="button" class="videos-add-button" id="videos-edit-add">add video</button>
-                                        <ul id="videos-edit-codes" class="nobullets">
-
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div>
-                                        <input type="submit" class="submit" value="save modified article"/>
-                                        <input type="hidden" name="_rev"/>
-                                    </div>
-                                </div>
-
-                            </fieldset>
-                        </form>
-
-                        <div id="videos-articles-grid">
-                            <button type="button" id="videos-new-button">new videos article</button>
-                            <ul class="section-list">
-                            </ul>
-                        </div>
-
                     </div>
 
 
 
-                    <div id="music-section" class="section">
-
-                        <form id="music-new-form" class="subsection">
+                    <div id="create-music-section" class="section">
+                        <form id="create-music-form" class="subsection">
                             <fieldset>
-                                <legend>new music form</legend>
-
+                                <legend>create music</legend>
                                 <div>
-                                    <label for="music-new-cover">new cover image</label>
+                                    <label for="create-music-cover">new cover image</label>
                                     <div>
-                                        <input type="file" id="music-new-cover" name="_attachments"/>
-                                        <ul id="music-new-cover-preview">
+                                        <input type="file" id="create-music-cover" name="_attachments"/>
+                                        <ul id="create-music-cover-preview">
                                         </ul>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="music-new-title">new music title</label>
+                                    <label for="create-music-title">new music title</label>
                                     <div>
-                                        <input id="music-new-title" type="text" placeholder="music title" name="title"/>
+                                        <input id="create-music-title" type="text" placeholder="music title" name="title"/>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="music-new-author">new music author</label>
+                                    <label for="create-music-author">new music author</label>
                                     <div>
-                                        <input id="music-new-author" type="text" placeholder="music author" name="author"/>
+                                        <input id="create-music-author" type="text" placeholder="music author" name="author"/>
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label for="music-new-code">new music embed code</label>
+                                    <label for="create-music-code">new music embed code</label>
                                     <div>
-                                        <input id="music-new-code" type="text" placeholder="music code" name="music"/>
+                                        <input id="create-music-code" type="text" placeholder="music code" name="music"/>
                                     </div>
                                 </div>
-
                                 <div>
                                     <div>
                                         <input type="submit" class="submit" value="add new article"/>
                                         <input type="hidden" name="_rev"/>
                                     </div>
                                 </div>
-
                             </fieldset>
                         </form>
+                    </div>
+                </div>
 
-                        <form id="music-edit-form" class="subsection">
-                            <fieldset>
-                                <legend>edit music form</legend>
 
-                                <div>
-                                    <label for="music-edit-cover">edit cover image</label>
-                                    <div>
-                                        <input type="file" id="music-edit-cover" name="_attachments"/>
-                                        <ul id="music-edit-cover-preview">
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="music-edit-title">edit music title</label>
-                                    <div>
-                                        <input id="music-edit-title" type="text" placeholder="music title" name="title"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="music-edit-author">edit music author</label>
-                                    <div>
-                                        <input id="music-edit-author" type="text" placeholder="music author" name="author"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="music-edit-code">edit music embed code</label>
-                                    <div>
-                                        <input id="music-edit-code" type="text" placeholder="music code" name="video"/>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div>
-                                        <input type="submit" class="submit" value="save modified article"/>
-                                        <input type="hidden" name="_rev"/>
-                                    </div>
-                                </div>
-
-                            </fieldset>
-                        </form>
-
-                        <div id="music-articles-grid">
-                            <button type="button" id="music-new-button">new music article</button>
-                            <ul class="section-list">
-                            </ul>
-                        </div>
-
-                    </div>--><!-- /music-section-->
-                </div><!-- /edit-interface-->
 
                 <div class="page-footer">
                     <h2><a href="help.html">  HELP  </a>&#149<a href="todo.html">  TODO  </a></h2> 
                 </div>
-
             </div><!-- /content-->
-
         </div> <!-- /container -->
-
     </body>
 </html>
 

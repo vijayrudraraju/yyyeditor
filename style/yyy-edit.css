@@ -44,6 +44,22 @@ fieldset div {
 
 
 
+/* section specific styles */
+#create-text-section {
+    background-color: lightBlue;
+}
+#create-image-section {
+    background-color: lightGreen;
+}
+#create-video-section {
+    background-color: lightYellow;
+}
+#create-music-section {
+    background-color: lightPink;
+}
+
+
+
 /*
 #all-section button, #all-section input.submit, #all-section input.button {
     background-color: lightBlue;
