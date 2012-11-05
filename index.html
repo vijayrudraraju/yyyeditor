@@ -15,55 +15,59 @@
         <script type="text/javascript" src="/_utils/script/jquery.js"></script>
         <script type="text/javascript" src="/_utils/script/jquery.couch.js"></script>
 
+        <!--<script type="text/javascript" src="script/pouch.js"></script>-->
+
         <!--<script type="text/javascript" src="script/async.js"></script>-->
         <script type="text/javascript" src="script/underscore.js"></script>
         <script type="text/javascript" src="script/backbone.js"></script>
+
         <script type="text/javascript" src="script/backbone-couchdb.js"></script>
+        <!--<script type="text/javascript" src="script/backbone-pouchdb.js"></script>-->
+
         <script type="text/javascript" src="script/jquery.form.js"></script>
         <script type="text/javascript" src="script/hash.js"></script>
         <script type="text/javascript" src="script/jquery.hash.js"></script>
 
-        <script src="script/yyy-edit.js"></script>
+        <script type="text/javascript" src="script/yyy-edit.js"></script>
     </head>
 
     <body>
-        <div class="container">
-            <div id="content" class="content">
+        <div id="app-container" class="container">
+            <div id="app-content" class="content">
 
-
-
-                <div class="page-header">
-                    <a href=''>
-                        <h1>E   D   I   T</h1>
-                        <h1>YES YES YES</h1>
-                    </a>
+                <div id="preview-interface" class="interface">
                 </div>
 
-
-
-                <div class="section-header">
+                <!--<div class="section-header">
                     <h2>all articles</h2>
-                </div>
-
-
+                </div>-->
 
                 <!-- view all articles -->
-                <div id="view-interface" class="interface">
-                    <div id="view-section" class="section">
-                        <div id="view-articles-grid" class="subsection">
+                <div id="nav-interface" class="interface">
+                    <div id="nav-header" class="interface-header">
+                        <a href=''>
+                            <h1>E   D   I   T</h1>
+                            <h1>YES YES YES</h1>
+                        </a>
+                    </div>
+                    <div id="nav-section" class="section">
+                        <div id="nav-articles-grid" class="subsection">
 
-                            <button type="button" id="new-btn" class="new-button">new article</button>
-                            <ul class="section-list">
+                            <button type="button" id="new-btn" class="new-button">create new article</button>
+                            <ul id="nav-list" class="section-list">
                             </ul>
 
                         </div>
                     </div>
-                </div>
+                    <div id="nav-footer" class="interface-footer">
+                        <h2><a href="help.html">  HELP  </a>&#149<a href="todo.html">  TODO  </a></h2> 
+                    </div>
+                </div><!-- /nav-interface-->
 
 
 
                 <!-- create an article -->
-                <div class="create-interface" class="interface">
+                <div id="create-interface" class="interface">
                     <div class="tabs">
                         <div class="tab"><a id="text-link" href="#/text">text</a></div>
                         <div class="tab"><a id="images-link" href="#/image">image</a></div>
@@ -111,7 +115,7 @@
                                 </div>
                             </fieldset>
                         </form>
-                    </div>
+                    </div><!-- /create-text-section-->
 
 
 
@@ -155,7 +159,7 @@
                                 </div>
                             </fieldset>
                         </form>
-                    </div>
+                    </div><!-- /create-image-section-->
 
 
 
@@ -200,7 +204,7 @@
                                 </div>
                             </fieldset>
                         </form>
-                    </div>
+                    </div><!-- /create-video-section-->
 
 
 
@@ -242,14 +246,9 @@
                                 </div>
                             </fieldset>
                         </form>
-                    </div>
-                </div>
+                    </div><!-- /create-music-section-->
+                </div><!-- /create-interface-->
 
-
-
-                <div class="page-footer">
-                    <h2><a href="help.html">  HELP  </a>&#149<a href="todo.html">  TODO  </a></h2> 
-                </div>
             </div><!-- /content-->
         </div> <!-- /container -->
     </body>

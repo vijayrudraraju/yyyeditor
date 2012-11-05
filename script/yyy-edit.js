@@ -7,21 +7,26 @@ $(function(){
     }
 
     var _DBNAME = 'yyy';
+    var _EDITDOCNAME = 'edit';
+    var _MAINDOCNAME = 'one';
+    var _DATE = new Date();
     Backbone.couch_connector.config.db_name = _DBNAME;
-    Backbone.couch_connector.config.ddoc_name = "edit";
+    Backbone.couch_connector.config.ddoc_name = _EDITDOCNAME;
 
     window.PageModel= Backbone.Model.extend({
         url: '/pages'
     }); 
-    window.YYYCollectionClass = {};
-    window.YYYCollectionClass['all'] = Backbone.Collection.extend({
-        model: PageModel,
+    //window.YYYCollectionClass = {};
+    window.YYYCollectionClass = Backbone.Collection.extend({
+        model: window.PageModel,
+        //pouch: Backbone.sync.pouch('idb://'+_DBNAME)
         db: {
             view: "all" 
         }
     });
-    window.YYYCollection = {};
-    window.YYYCollection['all'] = new YYYCollectionClass['all'];
+    //window.YYYCollection = {};
+    //window.YYYCollection['all'] = new YYYCollectionClass['all'];
+    window.YYYCollection = new YYYCollectionClass;
 
     function generateToggler(array) {
         return function(showIndex) {
@@ -36,10 +41,16 @@ $(function(){
     }
     var createArray = ['#create-text-section', '#create-image-section', '#create-video-section', '#create-music-section'];
     var createToggle = generateToggler(createArray);
+    var interfaceArray = ['#nav-interface', '#preview-interface', '#create-interface'];
+    var interfaceToggle = generateToggler(interfaceArray);
 
     $('body').hashchange(function (e, newHash) {
         console.log('hashchange',e,newHash);
-        if (newHash === '/text') {
+        if (newHash === '') {
+            console.log('init');
+            createToggle();
+            interfaceToggle(0);
+        } else if (newHash === '/text') {
             createToggle(0);
         } else if (newHash === '/image') {
             createToggle(1);
@@ -50,6 +61,290 @@ $(function(){
         }
     });
     $.hash.init();
+
+    window.YYYViewClass = Backbone.View.extend({
+        events: {
+            "click .view-button" : "viewOne",
+            "click #new-btn" : "createNewArticle",
+            "click .update-button" : "updateArticle"
+        },
+        initialize: function() {
+            // helpful state and identity variables
+            this.selectedId = 0;
+            this.selectedModel = {};
+            this.coverName = []; 
+
+            console.log('YYYViewClass initialize');
+
+            // fetch data
+            window.YYYCollection.on('reset', this.onReset, this);
+            window.YYYCollection.fetch({success: function(coll, resp) { 
+                console.log(coll,resp,'initial fetch success');
+            }});
+
+            // initialize view
+            /*
+            $('#view-interface').show();
+            $('#create-interface').hide();
+            $('#edit-interface').hide();
+            */
+        },
+        refresh: function() {
+            window.YYYCollection.fetch({success: function() { console.log(this.type, 'refresh fetch success');}});
+        },
+        onReset: function(coll,resp) {
+            console.log('onReset');
+
+            $('#nav-list').html('');
+            window.YYYCollection.each(this.addOne, this);
+        },
+        addOne: function(model) {
+            console.log(model, model.get('title'), 'addOne');
+            $('#nav-list').append(
+                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="update-button" id="update-'+model.id+'">update</button></li>'
+            );
+        },
+        viewOne: function(ev) {
+            console.log(this.type+' viewOne ',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+            var model = window.YYYCollection.getByCid(stringArray[2]);
+            console.log(model);
+
+            this.selectedId = model.id;
+            this.selectedTemplate = model.get('template');
+
+            window.open('/'+_DBNAME+'/_design/one/_show/'+this.selectedTemplate+'Article/'+this.selectedId);
+        },
+        updateArticle: function(ev) {
+            console.log('trigger updateArticle',ev,ev.target.id);
+
+            var stringArray = ev.target.id.split('-');
+
+            this.selectedId = stringArray[1];
+
+            $.get('/'+_DBNAME+'/_design/'+_EDITDOCNAME+'/_show/'+'article/'+this.selectedId, function(data) {
+                console.log(data);
+                $('#preview-interface').html(data);
+                interfaceToggle(1);
+            });
+            //window.location.href = '#/editText/'+stringArray[2];
+        },
+        createNewArticle: function(ev) {
+            console.log('trigger createNewArticle',ev,ev.target.id);
+
+            /*
+            $('#'+this.type+'-new-cover').parent().html($('#'+this.type+'-new-cover').parent().html());
+            $('#'+this.type+'-new-title').val('');
+            $('#'+this.type+'-new-author').val('');
+            $('#'+this.type+'-new-main').val('');
+
+            $('#create-interface').show();
+            $('#view-interface').hide();
+            $('#edit-interface').hide();
+
+            $('#create-text-section').show();
+            $('#create-image-section').hide();
+            $('#create-video-section').hide();
+            $('#create-music-section').hide();
+            */
+
+            this.selectedId = 0;
+            this.selectedModel = {};
+            self.coverName = [];
+
+            this.saveNewToServer();
+            //this.refreshCoverAttachment();
+        },
+        coverFileChange: function(ev) {
+            console.log(this.type+' coverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        editCoverFileChange: function(ev) {
+            console.log(this.type+' editCoverFileChange');
+
+            this.refreshCoverAttachment();
+        },
+        refreshCoverAttachment: function() {
+            console.log(this.type+' refreshCoverAttachment');
+
+            var self = this;
+
+            $('#'+this.type+'-new-cover-preview').html('');
+            var file = $('#'+this.type+'-new-cover')[0].files[0];
+            if (file) {
+                $('#'+this.type+'-new-cover-preview').append('<li>'+file.name);
+                $('#'+this.type+'-new-cover-preview').append('<img class="thumbnail" id="'+this.type+'-new-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#'+this.type+'-new-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            }
+
+            $('#'+this.type+'-edit-cover-preview').html('');
+            var file = $('#'+this.type+'-edit-cover')[0].files[0];
+            if (file) {
+                $('#'+this.type+'-edit-cover-preview').append('<li>'+file.name);
+                $('#'+this.type+'-edit-cover-preview').append('<img class="thumbnail" id="'+this+'-edit-cover-preview-image" alt="image"/></li>');
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#'+this.type+'-edit-cover-preview-image')[0]);
+                reader.readAsDataURL(file);
+            } else if (self.selectedModel.id) {
+                file = self.selectedModel.get('covername');
+                $('#'+this.type+'-edit-cover-preview').append('<li>'+file);
+                $('#'+this.type+'-edit-cover-preview').append('<img class="thumbnail" id="'+this.type+'-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/></li>');
+            }
+        },
+        saveNewToServer: function() {
+            console.log('saveNewToServer');
+
+            var self = this;
+            self.coverName = '(empty)';
+            //self.coverName= [];
+            /*
+            for (var i=0;i<$('#'+this.type+'-new-cover')[0].files.length;i++) {
+                self.coverName.push($('#'+this.type+'-new-cover')[0].files[i].name);
+            }
+            */
+
+            /*if ($('#'+this.type+'-new-title').val() === '' || $('#'+this.type+'-new-author').val() === '' || $('#'+text+'-new-main').val() === '' || self.coverName.length === 0) {
+                alert('somethings empty!! not gonna do it');
+                return;
+            }*/
+
+            /*
+            YYYCollection.add({
+                title:$('#'+this.type+'-new-title').val(),
+                author:$('#'+this.type+'-new-author').val(),
+                text:$('#'+this.type+'-new-main').val(),
+                covername:self.coverName
+            });
+            */
+            YYYCollection.add({
+                title:'((empty))',
+                author:'((empty))',
+                text: '((empty))',
+                cover_name: '((empty))',
+                unix_creation_time: _DATE.getTime(),
+                unix_modified_time: _DATE.getTime()
+            });
+
+            YYYCollection.at(YYYCollection.length-1).save({},{
+                success: function() { 
+                    console.log('model save success ' + YYYCollection.at(YYYCollection.length-1).id + ' ' + YYYCollection.at(YYYCollection.length-1).cid); 
+
+                    /*
+                    if (self.coverName.length) {
+                        $('#'+this.type+'-new-form :hidden').val(YYYCollection.at(YYYCollection.length-1).get('_rev'));
+                        $('#'+this.type+'-new-form').ajaxSubmit({
+                            url: '/'+_DBNAME+'/'+YYYCollection.at(YYYCollection.length-1).id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log(this.type+' data upload success!');
+                                console.log(data);
+
+                                YYYCollection[this.type].fetch({
+                                    success: function() { 
+                                        console.log(this.type+' data post save fetch success');
+
+                                        $('#'+this.type+'-new-form').hide();
+                                        $('#'+this.type+'-edit-form').hide();
+                                        $('#'+this.type+'-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log(this.type+' data upload error!');
+                            }
+                        });
+                    } else {*/
+                        YYYCollection.fetch({
+                            success: function() { 
+                                console.log('post-create new article save fetch success');
+
+                                //$('#'+this.type+'-new-form').hide();
+                                //$('#'+this.type+'-edit-form').hide();
+                                //$('#'+this.type+'-articles-grid').show();
+                            }
+                        });
+                    //}
+
+                }
+            });
+        },
+        saveOldToServer: function() {
+            console.log(this.type+' saveOldToServer');
+
+            var self = this;
+            if ($('#'+this.type+'-edit-cover')[0].files.length) {
+                self.coverName[0] = $('#'+this.type+'-edit-cover')[0].files[0].name;
+
+                YYYCollection.get(this.selectedId).set({
+                    title:$('#'+this.type+'-edit-title').val(),
+                    author:$('#'+this.type+'-edit-author').val(),
+                    text:HtmlEncode($('#'+this.type+'-edit-main').val()),
+                    covername:self.coverName
+                });
+            } else {
+                self.coverName = [];
+
+                YYYCollection.get(this.selectedId).set({
+                    title:$('#'+this.type+'-edit-title').val(),
+                    author:$('#'+this.type+'-edit-author').val(),
+                    text:HtmlEncode($('#'+this.type+'-edit-main').val())
+                });
+            }
+
+            var id = this.selectedId;
+
+            YYYCollection.get(this.selectedId).save({},{
+                success: function() { 
+                    console.log(this.type+' resave success ' + YYYCollection.get(id).id + ' ' + YYYCollection.get(id).cid); 
+
+                    if (self.coverName.length) {
+                        $('#'+this.type+'-edit-form :hidden').val(YYYCollection.get(id).get('_rev'));
+                        $('#'+this.type+'-edit-form').ajaxSubmit({
+                            url: '/'+_DBNAME+'/'+id,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log(this.type+' data upload success!');
+                                console.log(data);
+
+                                YYYCollection[this.type].fetch({
+                                    success: function() { 
+                                        console.log(this.type+' data post save fetch success');
+
+                                        $('#'+this.type+'-new-form').hide();
+                                        $('#'+this.type+'-edit-form').hide();
+                                        $('#'+this.type+'-articles-grid').show();
+                                    }
+                                });
+                            },
+                            error: function(data) {
+                                console.log(this.type+' data upload error!');
+                            }
+                        });
+                    } else {
+                        YYYCollection[this.type].fetch({
+                            success: function() { 
+                                console.log(this.type+' data post save fetch success');
+
+                                $('#'+this.type+'-new-form').hide();
+                                $('#'+this.type+'-edit-form').hide();
+                                $('#'+this.type+'-articles-grid').show();
+                            }
+                        });
+                    }
+
+                }
+            });
+        }
+    });
+    //window.YYYAllViewClass = window.YYYViewClass.extend({});
+    window.AllView = new YYYViewClass({ el: $('#app-content') });
+
 
     /*
     window.YYYCollectionClass['text'] = Backbone.Collection.extend({
@@ -245,262 +540,6 @@ $(function(){
     */
 
 
-
-    window.YYYViewClass = Backbone.View.extend({
-        events: {
-            "click .view-button" : "viewOne",
-            "click .new-button" : "newOne",
-            "click .edit-button" : "editOne"
-        },
-        initialize: function() {
-            // helpful state and identity variables
-            this.selectedId = 0;
-            this.selectedModel = {};
-            this.coverName = []; 
-
-            console.log('A YYYViewClass initialize', this.type);
-
-            // fetch data
-            window.YYYCollection['all'].on('reset', this.onReset, this);
-            window.YYYCollection['all'].fetch({success: function(coll, resp) { 
-                console.log('YYYViewClass initialize fetch success');
-            }});
-
-            // initialize view
-            $('#view-interface').show();
-            $('#create-interface').hide();
-            $('#edit-interface').hide();
-        },
-        refresh: function() {
-            window.YYYCollection['all'].fetch({success: function() { console.log(this.type, 'refresh fetch success');}});
-        },
-        onReset: function(coll,resp) {
-            console.log(this.type, 'onReset');
-
-            $('#'+this.type+'-articles-grid ul').html('');
-            window.YYYCollection['all'].each(this.addOne, this);
-        },
-        addOne: function(model) {
-            console.log(model, model.get('title'), 'addOne', '#'+this.type+'-articles-grid ul');
-            $('#'+this.type+'-articles-grid ul').append(
-                '<li>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="'+this.type+'-edit-button" id="'+this.type+'-edit-'+model.id+'">edit</button><button type="button" class="'+this.type+'-view-button" id="'+this.type+'-view-'+model.cid+'">view</button></li>'
-            );
-        },
-        viewOne: function(ev) {
-            console.log(this.type+' viewOne ',ev,ev.target.id);
-
-            var stringArray = ev.target.id.split('-');
-            var model = window.YYYCollection['all'].getByCid(stringArray[2]);
-            console.log(model);
-
-            this.selectedId = model.id;
-            this.selectedTemplate = model.get('template');
-
-            window.open('/'+_DBNAME+'/_design/one/_show/'+this.selectedTemplate+'Article/'+this.selectedId);
-        },
-        editOne: function(ev) {
-            console.log(this.type+' editOne ',ev,ev.target.id);
-
-            var stringArray = ev.target.id.split('-');
-            window.location.href = '#/editText/'+stringArray[2];
-        },
-        newOne: function(ev) {
-            console.log('trigger newOne ',ev,ev.target.id);
-
-            $('#'+this.type+'-new-cover').parent().html($('#'+this.type+'-new-cover').parent().html());
-            $('#'+this.type+'-new-title').val('');
-            $('#'+this.type+'-new-author').val('');
-            $('#'+this.type+'-new-main').val('');
-
-            $('#create-interface').show();
-            $('#view-interface').hide();
-            $('#edit-interface').hide();
-
-            $('#create-text-section').show();
-            $('#create-image-section').hide();
-            $('#create-video-section').hide();
-            $('#create-music-section').hide();
-
-            this.selectedId = 0;
-            this.selectedModel = {};
-            self.coverName = [];
-
-            this.refreshCoverAttachment();
-        },
-        coverFileChange: function(ev) {
-            console.log(this.type+' coverFileChange');
-
-            this.refreshCoverAttachment();
-        },
-        editCoverFileChange: function(ev) {
-            console.log(this.type+' editCoverFileChange');
-
-            this.refreshCoverAttachment();
-        },
-        refreshCoverAttachment: function() {
-            console.log(this.type+' refreshCoverAttachment');
-
-            var self = this;
-
-            $('#'+this.type+'-new-cover-preview').html('');
-            var file = $('#'+this.type+'-new-cover')[0].files[0];
-            if (file) {
-                $('#'+this.type+'-new-cover-preview').append('<li>'+file.name);
-                $('#'+this.type+'-new-cover-preview').append('<img class="thumbnail" id="'+this.type+'-new-cover-preview-image" alt="image"/></li>');
-                var reader = new FileReader();
-                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#'+this.type+'-new-cover-preview-image')[0]);
-                reader.readAsDataURL(file);
-            }
-
-            $('#'+this.type+'-edit-cover-preview').html('');
-            var file = $('#'+this.type+'-edit-cover')[0].files[0];
-            if (file) {
-                $('#'+this.type+'-edit-cover-preview').append('<li>'+file.name);
-                $('#'+this.type+'-edit-cover-preview').append('<img class="thumbnail" id="'+this+'-edit-cover-preview-image" alt="image"/></li>');
-                var reader = new FileReader();
-                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#'+this.type+'-edit-cover-preview-image')[0]);
-                reader.readAsDataURL(file);
-            } else if (self.selectedModel.id) {
-                file = self.selectedModel.get('covername');
-                $('#'+this.type+'-edit-cover-preview').append('<li>'+file);
-                $('#'+this.type+'-edit-cover-preview').append('<img class="thumbnail" id="'+this.type+'-edit-cover-preview-image" src="/'+_DBNAME+'/'+self.selectedModel.id+'/'+file+'" alt="image"/></li>');
-            }
-        },
-        saveNewToServer: function() {
-            console.log(this.type+' saveNewToServer');
-
-            var self = this;
-            self.coverName= [];
-            for (var i=0;i<$('#'+this.type+'-new-cover')[0].files.length;i++) {
-                self.coverName.push($('#'+this.type+'-new-cover')[0].files[i].name);
-            }
-
-            if ($('#'+this.type+'-new-title').val() === '' || $('#'+this.type+'-new-author').val() === '' || $('#'+text+'-new-main').val() === '' || self.coverName.length === 0) {
-                alert('somethings empty!! not gonna do it');
-                return;
-            }
-
-            YYYCollection[this.type].add({
-                title:$('#'+this.type+'-new-title').val(),
-                author:$('#'+this.type+'-new-author').val(),
-                text:$('#'+this.type+'-new-main').val(),
-                covername:self.coverName
-            });
-
-            YYYCollection[this.type].at(YYYCollection[this.type].length-1).save({},{
-                success: function() { 
-                    console.log(this.type+' save success ' + YYYCollection[this.type].at(YYYCollection[this.type].length-1).id + ' ' + YYYCollection[this.type].at(YYYCollection[this.type].length-1).cid); 
-
-                    if (self.coverName.length) {
-                        $('#'+this.type+'-new-form :hidden').val(YYYCollection[this.type].at(YYYCollection[this.type].length-1).get('_rev'));
-                        $('#'+this.type+'-new-form').ajaxSubmit({
-                            url: '/'+_DBNAME+'/'+YYYCollection[this.type].at(YYYCollection[this.type].length-1).id,
-                            type: 'post',
-                            dataType: 'json',
-                            success: function(data) {
-                                console.log(this.type+' data upload success!');
-                                console.log(data);
-
-                                YYYCollection[this.type].fetch({
-                                    success: function() { 
-                                        console.log(this.type+' data post save fetch success');
-
-                                        $('#'+this.type+'-new-form').hide();
-                                        $('#'+this.type+'-edit-form').hide();
-                                        $('#'+this.type+'-articles-grid').show();
-                                    }
-                                });
-                            },
-                            error: function(data) {
-                                console.log(this.type+' data upload error!');
-                            }
-                        });
-                    } else {
-                        YYYCollection[this.type].fetch({
-                            success: function() { 
-                                console.log(this.type+' data post save fetch success');
-
-                                $('#'+this.type+'-new-form').hide();
-                                $('#'+this.type+'-edit-form').hide();
-                                $('#'+this.type+'-articles-grid').show();
-                            }
-                        });
-                    }
-
-                }
-            });
-        },
-        saveOldToServer: function() {
-            console.log(this.type+' saveOldToServer');
-
-            var self = this;
-            if ($('#'+this.type+'-edit-cover')[0].files.length) {
-                self.coverName[0] = $('#'+this.type+'-edit-cover')[0].files[0].name;
-
-                YYYCollection[this.type].get(this.selectedId).set({
-                    title:$('#'+this.type+'-edit-title').val(),
-                    author:$('#'+this.type+'-edit-author').val(),
-                    text:HtmlEncode($('#'+this.type+'-edit-main').val()),
-                    covername:self.coverName
-                });
-            } else {
-                self.coverName = [];
-
-                YYYCollection[this.type].get(this.selectedId).set({
-                    title:$('#'+this.type+'-edit-title').val(),
-                    author:$('#'+this.type+'-edit-author').val(),
-                    text:HtmlEncode($('#'+this.type+'-edit-main').val())
-                });
-            }
-
-            var id = this.selectedId;
-
-            YYYCollection[this.type].get(this.selectedId).save({},{
-                success: function() { 
-                    console.log(this.type+' resave success ' + YYYCollection[this.type].get(id).id + ' ' + YYYCollection[this.type].get(id).cid); 
-
-                    if (self.coverName.length) {
-                        $('#'+this.type+'-edit-form :hidden').val(YYYCollection[this.type].get(id).get('_rev'));
-                        $('#'+this.type+'-edit-form').ajaxSubmit({
-                            url: '/'+_DBNAME+'/'+id,
-                            type: 'post',
-                            dataType: 'json',
-                            success: function(data) {
-                                console.log(this.type+' data upload success!');
-                                console.log(data);
-
-                                YYYCollection[this.type].fetch({
-                                    success: function() { 
-                                        console.log(this.type+' data post save fetch success');
-
-                                        $('#'+this.type+'-new-form').hide();
-                                        $('#'+this.type+'-edit-form').hide();
-                                        $('#'+this.type+'-articles-grid').show();
-                                    }
-                                });
-                            },
-                            error: function(data) {
-                                console.log(this.type+' data upload error!');
-                            }
-                        });
-                    } else {
-                        YYYCollection[this.type].fetch({
-                            success: function() { 
-                                console.log(this.type+' data post save fetch success');
-
-                                $('#'+this.type+'-new-form').hide();
-                                $('#'+this.type+'-edit-form').hide();
-                                $('#'+this.type+'-articles-grid').show();
-                            }
-                        });
-                    }
-
-                }
-            });
-        }
-    });
-    //window.YYYAllViewClass = window.YYYViewClass.extend({});
-    window.AllView = new YYYViewClass({ el: $('#view-section') });
 
 
     /*
