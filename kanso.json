@@ -2,7 +2,7 @@
     "name": "edit",
     "version": "0.0.1",
     "description": "editor interface for yyy",
-    "attachments": ["index.html","script","style"],
+    "attachments": ["index.html","script","style","images"],
     "duality": { "base_template": "base.html" },
     "dust": { "templates": "templates" },
     "modules": ["lib"],

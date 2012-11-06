@@ -38,6 +38,10 @@ button:active {
 }
 
 /* subsection structure */
+.page-section div {
+    font-family: 'Goudy Bookletter 1911', serif;
+    font-size: 22px;
+}
 
 /* tabs */
 .tabs {
