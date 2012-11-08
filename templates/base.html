@@ -4,16 +4,18 @@
         <h1>I NT E R NE T</h1>
         <h1>YES YES YES</h1>
     </a>
-    <button type="button" id="view-btn" class="new-button">view the final article</button>
-    <button type="button" id="home-btn" class="new-button">go back to all articles</button>
+    <br/>
+    <br/>
+    <button type="button" id="view-btn" class="button">final article</button>
+    <button type="button" id="home-btn" class="button">home</button>
 </div>
 
 <div class="page-subheader">
     <h2 class="title">{title}</h2>
-    <button type="button" id="update-title-btn" class="new-button">update title</button>
+    <button type="button" id="save-title-button" class="button">save title</button>
     <input id="edit-title-input" type="text" value="{title}" placeholder="{title}" name="title"/>
     <h2 class="author">by {author}</h2>
-    <button type="button" id="update-author-btn" class="new-button">update author</button>
+    <button type="button" id="save-author-button" class="button">save author</button>
     <input id="edit-author-input" type="text" value="{author}" placeholder="{author}" name="author"/>
 </div>
 {#sections}
@@ -23,7 +25,7 @@
     {/normText}
     {#text}
         <textarea id="edit-text-input-{id}" name="text" rows="20">{.}</textarea>
-        <button type="button" id="update-text-btn-{id}" class="update-text-section-button">update text</button>
+        <button type="button" id="save-text-button-{id}" class="save-text-section-button">save text</button>
     </div>
     {/text}
     {#image}
@@ -35,10 +37,23 @@
                 <input type="hidden" name="_rev"/>
             </form>
             <div id="update-image-preview-{id}"></div>
-            <button type="button" class="update-image-button" id="image-{id}">update image</button>
+            <button type="button" class="update-image-section-button" id="image-{id}">update image</button>
         </div>
     </div>
     {/image}
+    {#empty}
+    <div class="page-section page-section-{id}">
+        <img class="small" src="/yyy/{page_id}/((empty))"/>
+        <div id="image-interface-{id}">
+            <form id="image-form-{id}">
+                <input type="file" class="update-file-input" id="update-image-input-{id}" name="_attachments"/>
+                <input type="hidden" name="_rev"/>
+            </form>
+            <div id="update-image-preview-{id}"></div>
+            <button type="button" class="update-image-section-button" id="image-{id}">update image</button>
+        </div>
+    </div>
+    {/empty}
 {/sections}
 
 <button type="button" id="add-text-section-btn" class="new-button">add text</button>

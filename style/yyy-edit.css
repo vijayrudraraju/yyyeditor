@@ -1,14 +1,18 @@
 button, input.submit, input.button {
     font-size: 20px;
-    border: 1px outset blue;
+    border: 2px outset blue;
     background-color: lightBlue;
-    margin: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    box-sizing: content-box;
+    width: 136px;
+    padding: 2px;
 }
 button:hover {
-    background-color: blue;
+    background-color: green;
 }
 button:active {
-    background-color: red;
+    background-color: blue;
 }
 
 /* interface structure */
@@ -29,6 +33,7 @@ button:active {
     margin-bottom: 100px;
     margin-left: 0px;
     margin-right: 0px;
+    clear: both;
 }
 .interface-footer h2, .interface-footer a {
     font-family: 'Pontano Sans', sans-serif;
@@ -38,9 +43,38 @@ button:active {
 }
 
 /* subsection structure */
+.subsection {
+    padding-top: 20px;
+    border-top-style: solid;
+    border-color: black;
+    border-width: 1px;
+}
 .page-section div {
     font-family: 'Goudy Bookletter 1911', serif;
     font-size: 22px;
+}
+.file-input-interface {
+    position: relative;
+}
+.file-input-interface > .change-cover-button {
+    position: relative;
+}
+.file-form {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.file-form > .change-file-input {
+    width: 144px;
+    height: 31px;
+}
+
+/* content structure */
+.small {
+    height:100px;
 }
 
 /* tabs */
@@ -62,15 +96,6 @@ textarea {
 input[type=text] {
     width: 400px;
 }
-ul {
-    list-style-type: square;
-    border-top-style: solid;
-    border-color: black;
-    border-width: 1px;
-}
-li {
-    margin: 10px;
-}
 fieldset div {
     padding: 10px;
 }
@@ -90,23 +115,3 @@ fieldset div {
 #create-music-section {
     background-color: lightPink;
 }
-
-
-
-/*
-#all-section button, #all-section input.submit, #all-section input.button {
-    background-color: lightBlue;
-}
-#text-section  button, #text-section input.submit, #text-section input.button {
-    background-color: lightGreen;
-}
-#images-section button, #images-section input.submit, #images-section input.button {
-    background-color: lightGrey;
-}
-#videos-section  button, #videos-section input.submit, #videos-section input.button {
-    background-color: lightYellow;
-}
-#music-section  button, #music-section input.submit, #music-section input.button {
-    background-color: lightPink;
-}
-*/

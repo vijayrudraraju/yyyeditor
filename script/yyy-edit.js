@@ -6,6 +6,57 @@
         return s;
     }
 
+
+    var errors = {};
+    function success() {
+        console.log("success: ",this.src);
+    }
+    function failure() {
+        console.log("success: ",this.src);
+    }
+
+    // Check the existence of an image file at `url` by creating a
+    // temporary Image element. The `success` callback is called
+    // if the image loads correctly or the image is already complete.
+    // The `failure` callback is called if the image fails to load
+    // or has failed to load in the past.
+    window.checkImage = function (url, success, failure) {
+        var img = new Image(), loaded = false, errored = false;
+        // Run only once, when `loaded` is false. If `success` is a
+        // function, it is called with `img` as the context.
+        img.onload = function () {
+            if (loaded) {
+                return;
+            }
+            loaded = true;
+            if (success && success.call) {
+                success.call(img);
+            }
+        };
+        // Run only once, when `errored` is false. If `failure` is a
+        // function, it is called with `img` as the context.
+        img.onerror = function () {
+            if (errored) {
+                return;
+            }
+            errors[url] = errored = true;
+            if (failure && failure.call) {
+                failure.call(img);
+            }
+        };
+        img.src = url;
+        // If `url` is in the `errors` object, trigger the `onerror`
+        // callback.
+        if (errors[url]) {
+            img.onerror.call(img);
+        }
+        // If the image is already complete (i.e. cached), trigger the
+        // `onload` callback.
+        if (img.complete) {
+            img.onload.call(img);
+        }
+    };
+
     var _DBNAME = 'yyy';
     var _EDITDOCNAME = 'edit';
     var _MAINDOCNAME = 'one';
@@ -55,6 +106,8 @@
             $('#preview-interface').html(data);
             interfaceToggle(1);
             _SNEAKY.scroll();
+
+            // check for non-existent images
         });
     }
 
@@ -83,19 +136,49 @@
         }
     });
 
+    // setup grid item handlers in nav-interface
+    $('li').live('mouseover',function() {
+        $('.cell').each(function() {
+            $('.label',this).css('visibility','hidden');
+        });
+        $('.label',this).css('visibility','visible');
+    });
+    $('li').live('mouseout',function() {
+        $('.cell').each(function() {
+            $('.label',this).css('visibility','hidden');
+        });
+    });
+    $('.file-form').find('input[type=file]')
+        .live('mouseover', function() {
+            $(this).parent().parent().find('.change-file-button')
+                .css('background-color','green');
+        })
+        .live('mouseout', function() {
+            $(this).parent().parent().find('.change-file-button')
+                .css('background-color','lightBlue');
+        })
+        .live('mousedown', function() {
+            $(this).parent().parent().find('.change-file-button')
+                .css('background-color','blue');
+        });
+
     window.YYYViewClass = Backbone.View.extend({
         events: {
             "click .view-button" : "viewOne",
-            "click #new-btn" : "addArticle",
             "click #home-btn" : "goHome",
-            "click .update-button" : "updateArticle",
-            "click .update-cover-button" : "updateCover",
-            "click .update-text-section-button" : "updateTextSection",
-            "click #update-title-btn": "updateTitle",
-            "click #update-author-btn": "updateAuthor",
-            "change .update-file-input": "refreshCoverPreview",
+
+            "click #new-btn" : "addArticle",
+            "click .edit-button" : "editArticle",
+            "change .change-file-input": "refreshCover",
+            "click .save-cover-button" : "saveCover",
+
             "click #add-text-section-btn": "addTextSection",
             "click #add-image-section-btn": "addImageSection"
+
+            "click #save-title-button": "saveTitle",
+            "click #save-author-button": "saveAuthor",
+            "click .save-text-section-button" : "saveTextSection",
+            "click .save-image-section-button" : "saveImageSection",
         },
         initialize: function() {
             // helpful state and identity variables
@@ -127,11 +210,25 @@
             $.hash.go('/home');
         },
         addOne: function(model) {
-            console.log(model, model.get('title'), 'addOne');
-            $('#nav-list').append(
-                '<li><img id="current-cover-'+model.id+'" src="/'+_DBNAME+'/'+model.id+'/'+model.get('cover_name')+'" class="thumbnail"><div id="cover-interface-'+model.id+'"><form id="cover-form-'+model.id+'"><input type="file" class="update-file-input" id="update-cover-input-'+model.id+'" name="_attachments"/><input type="hidden" name="_rev"/></form><div id="update-cover-preview-'+model.id+'"></div></div><button type="button" class="update-cover-button" id="cover-'+model.id+'">update cover</button><br/>'+model.get('title')+'<br/>'+model.get('author')+'<br/><button type="button" class="update-button" id="update-'+model.id+'">edit article</button></li>'
-            );
-            //$('.grid').append('<li class="cell"><img src="/'+_DBNAME+'/'+model.id+'/'+model.get('covername')[0]+'" class="thumbnail"></img><a class="link" href="'+linkText+'"><div class="label"><h3>'+model.get('author')+'</h3><h3>'+model.get('title')+'</h3></div></a></li>').find('.label').toggle(false);
+            console.log(model, model.get('title'), model.get('cover_name'), 'addOne');
+            var linkText = '_show/article/'+model.id;
+            var str = 
+                '<li class="cell">' +
+                '<a class="link" href="'+linkText+'">' + 
+                '<img class="thumbnail" src="/'+_DBNAME+'/'+model.id+'/'+model.get('cover_name')+'"/>' +
+                '<div class="label">' +
+                '<h3>'+model.get('author')+'</h3>' +
+                '<h3>'+model.get('title')+'</h3>' +
+                '</div></a>' + 
+                '<div class="file-input-interface" id="cover-interface-'+model.id+'">' +
+                '<button type="button" class="change-file-button" id="change-cover-'+model.id+'">change cover</button>' +
+                '<form class="file-form" id="cover-form-'+model.id+'"><input type="file" class="change-file-input" id="update-cover-input-'+model.id+'" name="_attachments"/><input type="hidden" name="_rev"/><input class="hidden-name" type="hidden" name="cover_name"/></form>' + 
+                '</div>' +
+                '<button type="button" class="save-cover-button" id="save-cover-'+model.id+'">save cover</button>' +
+                '<br/>' +
+                '<button type="button" class="edit-button" id="edit-'+model.id+'">edit article</button>' +
+                '</li>';
+            $('#nav-grid').append(str);
         },
         viewOne: function(ev) {
             console.log(this.type+' viewOne ',ev,ev.target.id);
@@ -145,8 +242,8 @@
 
             window.open('/'+_DBNAME+'/_design/one/_show/'+this.selectedTemplate+'Article/'+this.selectedId);
         },
-        updateArticle: function(ev) {
-            console.log('trigger updateArticle',ev,ev.target.id);
+        editArticle: function(ev) {
+            console.log('trigger editArticle',ev,ev.target.id);
 
             var stringArray = ev.target.id.split('-');
 
@@ -155,11 +252,25 @@
 
             $.hash.go('/modify/'+that.selectedId);
         },
-        refreshCoverPreview: function(ev) {
+        refreshCover: function(ev) {
             var id = ev.target.id.split('-')[3];
             var type = ev.target.id.split('-')[1];
-            console.log('refreshCoverPreview',ev.target.id,id,type);
+            console.log('refreshCover',ev.target.id,id,type);
 
+            var filePicker = $('#'+ev.target.id);
+
+            var file = filePicker[0].files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { 
+                    return function(e) { 
+                        aImg.src = e.target.result; 
+                        filePicker.parent().find('.hidden-name').val(file.name);
+                    } 
+                })(filePicker.parent().parent().parent().find('.thumbnail')[0]);
+                reader.readAsDataURL(file);
+            }
+            /*
             $('#update-'+type+'-preview-'+id).html('');
             var file = $('#update-'+type+'-input-'+id)[0].files[0];
             if (file) {
@@ -168,6 +279,7 @@
                 reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#update-'+type+'-preview-image-'+id)[0]);
                 reader.readAsDataURL(file);
             }
+            */
         },
         addArticle: function() {
             console.log('saveNewToServer');
@@ -212,7 +324,7 @@
             var sections = YYYCollection.get(_ID).get('sections');
             sections.push({
                 id: sections.length,
-                image: '((empty))'
+                image: ''
             });
 
             YYYCollection.get(_ID).set({
@@ -221,17 +333,17 @@
 
             this.saveArticle();
         },
-        updateCover: function(ev) {
-            var id = ev.target.id.split('-')[1];
-            console.log('updateCover',ev.target.id,id,$('#update-cover-preview-'+id+'>p').html());
+        saveCover: function(ev) {
+            var id = ev.target.id.split('-')[2];
+            console.log('saveCover',ev.target.id,id);
 
             YYYCollection.get(id).set({
-                cover_name:$('#update-cover-preview-'+id+'>p').html()
+                cover_name:$('#'+ev.target.id).parent().find('.hidden-name').val()
             });
 
             YYYCollection.get(id).save({},{
                 success: function() { 
-                    console.log('cover update success ' + YYYCollection.get(id).id + ' ' + YYYCollection.get(id).cid); 
+                    console.log('cover save success ' + YYYCollection.get(id).id + ' ' + YYYCollection.get(id).cid); 
 
                     $('#cover-form-'+id+' :hidden').val(YYYCollection.get(id).get('_rev'));
                     $('#cover-form-'+id).ajaxSubmit({
@@ -246,8 +358,8 @@
                 } 
             });
         },
-        updateTitle: function(ev) {
-            console.log('updateTitle',window.location.hash);
+        saveTitle: function(ev) {
+            console.log('saveTitle',window.location.hash);
 
             YYYCollection.get(_ID).set({
                 title:$('#edit-title-input').val(),
@@ -255,8 +367,8 @@
 
             this.saveArticle();
         },
-        updateAuthor: function() {
-            console.log('updateAuthor',window.location.hash);
+        saveAuthor: function() {
+            console.log('saveAuthor',window.location.hash);
 
             YYYCollection.get(_ID).set({
                 author:$('#edit-author-input').val(),
@@ -264,9 +376,9 @@
 
             this.saveArticle();
         },
-        updateTextSection: function(ev) {
+        saveTextSection: function(ev) {
             var sectionId = ev.target.id.split('-')[3];
-            console.log('updateTextSection', sectionId);
+            console.log('saveTextSection', sectionId);
             console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
             var sections = YYYCollection.get(_ID).get('sections');
             sections[sectionId] = {
@@ -280,6 +392,41 @@
             });
 
             this.saveArticle();
+        },
+        updateImageSection: function(ev) {
+            var sectionId = ev.target.id.split('-')[1];
+            console.log('updateImageSection', sectionId);
+            console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
+            var sections = YYYCollection.get(_ID).get('sections');
+            sections[sectionId] = {
+                id: sectionId,
+                image: $('#update-image-preview-'+sectionId+'> p').html() 
+            };
+            console.log(sections);
+
+
+            YYYCollection.get(_ID).set({
+                sections: sections
+            });
+
+            var that = this;
+            YYYCollection.get(_ID).save({},{
+                success: function() { 
+                    console.log('image section update success ' + YYYCollection.get(_ID).id + ' ' + YYYCollection.get(_ID).cid); 
+
+                    $('#image-form-'+sectionId+' :hidden').val(YYYCollection.get(_ID).get('_rev'));
+                    $('#image-form-'+sectionId).ajaxSubmit({
+                        url: '/'+_DBNAME+'/'+_ID,
+                        type: 'post',
+                        dataType: 'json',
+                        success: function(data) {
+                            console.log('image section upload success!');
+                            console.log(data);
+                            loadPage();
+                        }
+                    });
+                } 
+            });
         },
         saveArticle: function() {
             _SNEAKY.sneak();
