@@ -11,12 +11,16 @@
 </div>
 
 <div class="page-subheader">
-    <h2 class="title">{title}</h2>
-    <button type="button" id="save-title-button" class="button">save title</button>
-    <input id="edit-title-input" type="text" value="{title}" placeholder="{title}" name="title"/>
-    <h2 class="author">by {author}</h2>
-    <button type="button" id="save-author-button" class="button">save author</button>
-    <input id="edit-author-input" type="text" value="{author}" placeholder="{author}" name="author"/>
+    <div class="box">
+        <h2 class="title">{title}</h2>
+        <button type="button" id="save-title-button" class="button">save title</button>
+        <input id="edit-title-input" type="text" value="{title}" placeholder="{title}" name="title"/>
+    </div>
+    <div class="box">
+        <h2 class="author">by {author}</h2>
+        <button type="button" id="save-author-button" class="button">save author</button>
+        <input id="edit-author-input" type="text" value="{author}" placeholder="{author}" name="author"/>
+    </div>
 </div>
 {#sections}
     {#normText}
@@ -56,10 +60,18 @@
     </div>
 </div>
     {/empty}
+    {#link}
+<div class="page-section page-section-{id}">
+        <h2 class="author">{author}</h2>
+        <button type="button" id="save-author-button" class="button">save author</button>
+        <input id="edit-author-input" type="text" value="{author}" placeholder="{author}" name="author"/>
+</div>
+    {/link}
 {/sections}
 <div class="page-section red">
     <button type="button" id="add-text-section-button" class="space red">(+)add text</button>
     <button type="button" id="add-image-section-button" class="space red">(+)add image</button>
+    <button type="button" id="add-link-section-button" class="space red">(+)add link</button>
 </div>
 
 <div class="page-footer">

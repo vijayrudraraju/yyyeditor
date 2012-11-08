@@ -64,6 +64,7 @@
     var _DATE = new Date();
     var _ID = '';
     var _SNEAKY = new ScrollSneak(window.location.hostname);
+    var _SECTIONS = [];
 
     Backbone.couch_connector.config.db_name = _DBNAME;
     Backbone.couch_connector.config.ddoc_name = _EDITDOCNAME;
@@ -82,6 +83,9 @@
     //window.YYYCollection = {};
     //window.YYYCollection['all'] = new YYYCollectionClass['all'];
     window.YYYCollection = new YYYCollectionClass;
+    window.YYYCollection.comparator = function(a,b) {
+        return b.get('unix_creation_time') - a.get('unix_creation_time');
+    };
 
     function generateToggler(array) {
         return function(showIndex) {
@@ -107,7 +111,18 @@
             $('#preview-interface').html(data);
             interfaceToggle(1);
             _SNEAKY.scroll();
-
+            _SECTIONS.push($('#preview-interface').find('#edit-title-input').val());
+            _SECTIONS.push($('#preview-interface').find('#edit-author-input').val());
+            var textareas = $('#preview-interface').find('.page-section > textarea');
+            /*
+            for (var i=0;i<textareas.length;i++) {
+                _SECTIONS.push(textareas[i].val()); 
+            }
+            */
+            textareas.each(function() {
+                _SECTIONS.push($(this).val());
+            });
+            console.log('_SECTIONS',_SECTIONS);
             // check for non-existent images
         });
     }
@@ -144,7 +159,7 @@
         });
         $('.label',this).css('visibility','visible');
     });
-    $('li').live('mouseout',function() {
+    $('li').live('mouseout', function() {
         $('.cell').each(function() {
             $('.label',this).css('visibility','hidden');
         });
@@ -162,6 +177,35 @@
             $(this).parent().parent().find('.change-file-button')
                 .css('background-color','blue');
         });
+        $('input[type=text]').live('keyup change', function() {
+            if ($(this).parent().find('.title').is('*')) {
+                if ($(this).val() !== _SECTIONS[0]) {
+                    $(this).parent().find('.button').addClass('blinking');
+                    $(this).parent().addClass('blinking-section-border');
+                } else {
+                    $(this).parent().find('.button').removeClass('blinking');
+                    $(this).parent().removeClass('blinking-section-border');
+                }
+            } else if ($(this).parent().find('.author').is('*')) {
+                if ($(this).val() !== _SECTIONS[1]) {
+                    $(this).parent().find('.button').addClass('blinking');
+                    $(this).parent().addClass('blinking-section-border');
+                } else {
+                    $(this).parent().find('.button').removeClass('blinking');
+                    $(this).parent().removeClass('blinking-section-border');
+                }
+            }
+        });
+        $('textarea').live('keyup change', function() {
+            var sectionId = $(this).attr('id').split('-')[3];
+            if ($(this).val() !== _SECTIONS[sectionId]) {
+                $(this).parent().find('.save-text-button').addClass('blinking');
+                $(this).parent().addClass('blinking-section-border');
+            } else {
+                $(this).parent().find('.save-text-button').removeClass('blinking');
+                $(this).parent().removeClass('blinking-section-border');
+            }
+        });
 
     window.YYYViewClass = Backbone.View.extend({
         events: {
@@ -175,6 +219,7 @@
 
             "click #add-text-section-button": "addTextSection",
             "click #add-image-section-button": "addImageSection",
+            "click #add-link-section-button": "addTextSection",
 
             "click #save-title-button": "saveTitle",
             "click #save-author-button": "saveAuthor",
@@ -203,7 +248,7 @@
         onReset: function(coll,resp) {
             console.log('onReset');
 
-            $('#nav-list').html('');
+            $('#nav-grid').html('');
             window.YYYCollection.each(this.addOne, this);
         },
         goHome: function(ev) {
@@ -311,10 +356,10 @@
 
                     YYYCollection.fetch({
                         success: function() { 
-                                     console.log('post-create new article save fetch success');
-                                 }
+                            console.log('post-create new article save fetch success');
+                        }
                     });
-                         }
+                }
             });
         },
         addTextSection: function(ev) {
@@ -345,12 +390,28 @@
 
             this.saveArticle();
         },
+        addLinkSection: function(ev) {
+            console.log('addLinkSection', YYYCollection.get(_ID).get('sections'));
+            var sections = YYYCollection.get(_ID).get('sections');
+            sections.push({
+                id: sections.length,
+                link: '((empty))'
+                display: '((empty))'
+            });
+
+            YYYCollection.get(_ID).set({
+                sections: sections
+            });
+
+            this.saveArticle();
+        },
         saveCover: function(ev) {
             var id = ev.target.id.split('-')[2];
             console.log('saveCover',ev.target.id,id);
 
             YYYCollection.get(id).set({
-                cover_name:$('#'+ev.target.id).parent().find('.hidden-name').val()
+                cover_name:$('#'+ev.target.id).parent().find('.hidden-name').val(),
+                unix_modified_time: _DATE.getTime()
             });
 
             YYYCollection.get(id).save({},{
@@ -380,6 +441,7 @@
 
             YYYCollection.get(_ID).set({
                 title:$('#edit-title-input').val(),
+                unix_modified_time: _DATE.getTime()
             });
 
             this.saveArticle();
@@ -423,7 +485,8 @@
 
 
             YYYCollection.get(_ID).set({
-                sections: sections
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
             });
 
             var that = this;
