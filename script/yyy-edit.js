@@ -6,7 +6,7 @@
         return s;
     }
 
-
+    /*
     var errors = {};
     function success() {
         console.log("success: ",this.src);
@@ -56,6 +56,7 @@
             img.onload.call(img);
         }
     };
+    */
 
     var _DBNAME = 'yyy';
     var _EDITDOCNAME = 'edit';
@@ -266,9 +267,16 @@
                     return function(e) { 
                         aImg.src = e.target.result; 
                         filePicker.parent().find('.hidden-name').val(file.name);
-                        if (type === 'image') {
+                        if (type === 'cover') {
+                            filePicker.parent().parent().parent().find('.save-cover-button').addClass('blinking');
+                            filePicker.parent().parent().parent().find('.link').addClass('blinking-border');
+                            filePicker.parent().parent().parent().find('.thumbnail').addClass('bordered');
+                            filePicker.parent().parent().parent().find('.label').addClass('bordered');
+                        } else if (type === 'image') {
                             $(aImg).removeClass('small'); 
-                            $(aImg).addClass('fullscreen'); 
+                            $(aImg).addClass('fullscreen').addClass('bordered-section'); 
+                            filePicker.parent().parent().find('.save-image-button').addClass('blinking');
+                            filePicker.parent().parent().parent().addClass('blinking-section-border');
                         }
                     } 
                 })(filePicker.parent().parent().parent().find('img')[0]);
@@ -348,6 +356,7 @@
             YYYCollection.get(id).save({},{
                 success: function() { 
                     console.log('cover save success ' + YYYCollection.get(id).id + ' ' + YYYCollection.get(id).cid); 
+                    var filePicker = $('#update-cover-input-'+id);
 
                     $('#cover-form-'+id+' :hidden').val(YYYCollection.get(id).get('_rev'));
                     $('#cover-form-'+id).ajaxSubmit({
@@ -357,6 +366,10 @@
                         success: function(data) {
                             console.log('cover image upload success!');
                             console.log(data);
+                            filePicker.parent().parent().parent().find('.save-cover-button').removeClass('blinking');
+                            filePicker.parent().parent().parent().find('.link').removeClass('blinking-border');
+                            filePicker.parent().parent().parent().find('.thumbnail').removeClass('bordered');
+                            filePicker.parent().parent().parent().find('.label').removeClass('bordered');
                         }
                     });
                 } 
@@ -419,6 +432,7 @@
                     console.log('image section save success ' + YYYCollection.get(_ID).id + ' ' + YYYCollection.get(_ID).cid); 
 
                     $('#image-form-'+sectionId+' :hidden').val(YYYCollection.get(_ID).get('_rev'));
+                    var filePicker = $('#change-image-input-'+sectionId);
                     $('#image-form-'+sectionId).ajaxSubmit({
                         url: '/'+_DBNAME+'/'+_ID,
                         type: 'post',
@@ -426,6 +440,9 @@
                         success: function(data) {
                             console.log('image section upload success!');
                             console.log(data);
+                            filePicker.parent().parent().parent().removeClass('bordered-section'); 
+                            filePicker.parent().parent().find('.save-image-button').removeClass('blinking');
+                            filePicker.parent().parent().parent().removeClass('blinking-section-border');
                             loadPage();
                         }
                     });

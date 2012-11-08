@@ -84,6 +84,56 @@ div.red {
 }
 
 /* content structure */
+@keyframes color {
+    from {background: blue;}
+    to {background: red;}
+}
+@-webkit-keyframes color {
+    from {background: yellow;}
+    to {background: red;}
+}
+@-webkit-keyframes border {
+    from {border-color: yellow;}
+    to {border-color: red;}
+}
+.blinking {
+    animation: color 1s;
+    animation-iteration-count: infinite;
+    -webkit-animation: color 1s;
+    -webkit-animation-iteration-count: infinite;
+}
+.blinking-border {
+    animation: border 1s;
+    animation-iteration-count: infinite;
+    -webkit-animation: border 1s;
+    -webkit-animation-iteration-count: infinite;
+    border: 6px solid yellow;
+    width: 144px;
+    height: 144px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+.blinking-section-border {
+    animation: border 1s;
+    animation-iteration-count: infinite;
+    -webkit-animation: border 1s;
+    -webkit-animation-iteration-count: infinite;
+    border: 6px solid yellow;
+    width: 884px;
+    height: auto;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+img.bordered-section {
+    width: 872px;
+    height: auto;
+}
+.bordered {
+    width: 132px;
+    height: 132px;
+}
 .small {
     height:100px;
 }
