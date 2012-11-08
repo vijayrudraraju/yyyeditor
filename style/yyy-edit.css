@@ -1,10 +1,12 @@
 button, input.submit, input.button {
-    font-size: 20px;
+    font-size: 18px;
     border: 2px outset blue;
     background-color: lightBlue;
     margin-top: 10px;
     margin-bottom: 10px;
     box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
     width: 136px;
     padding: 2px;
 }
@@ -13,6 +15,9 @@ button:hover {
 }
 button:active {
     background-color: blue;
+}
+button.space {
+    margin: 10px;
 }
 
 /* interface structure */
@@ -49,6 +54,12 @@ button:active {
     border-color: black;
     border-width: 1px;
 }
+.page-section {
+    border: 2px solid blue;
+}
+div.red {
+    border: 2px solid red;
+}
 .page-section div {
     font-family: 'Goudy Bookletter 1911', serif;
     font-size: 22px;
@@ -76,6 +87,25 @@ button:active {
 .small {
     height:100px;
 }
+textarea {
+    width: 95%;
+    font-size: 16px;
+    margin: 15px;
+    color: blue;
+}
+input[type=text] {
+    width: 400px;
+    color: blue;
+}
+button.red {
+    background-color: yellow;
+}
+button.red:hover {
+    background-color: red;
+}
+button.red:active {
+    background-color: blue;
+}
 
 /* tabs */
 .tabs {
@@ -89,12 +119,6 @@ button:active {
 }
 .tab a:hover {
     color: gray;
-}
-textarea {
-    width: 100%;
-}
-input[type=text] {
-    width: 400px;
 }
 fieldset div {
     padding: 10px;

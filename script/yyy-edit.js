@@ -172,13 +172,13 @@
             "change .change-file-input": "refreshCover",
             "click .save-cover-button" : "saveCover",
 
-            "click #add-text-section-btn": "addTextSection",
-            "click #add-image-section-btn": "addImageSection"
+            "click #add-text-section-button": "addTextSection",
+            "click #add-image-section-button": "addImageSection",
 
             "click #save-title-button": "saveTitle",
             "click #save-author-button": "saveAuthor",
-            "click .save-text-section-button" : "saveTextSection",
-            "click .save-image-section-button" : "saveImageSection",
+            "click .save-text-button" : "saveTextSection",
+            "click .save-image-button" : "saveImageSection",
         },
         initialize: function() {
             // helpful state and identity variables
@@ -226,9 +226,9 @@
                 '</div>' +
                 '<button type="button" class="save-cover-button" id="save-cover-'+model.id+'">save cover</button>' +
                 '<br/>' +
-                '<button type="button" class="edit-button" id="edit-'+model.id+'">edit article</button>' +
+                '<button type="button" class="edit-button red" id="edit-'+model.id+'">edit article</button>' +
                 '</li>';
-            $('#nav-grid').append(str);
+            $('#nav-grid').append(str).find('.label').css('visibility','hidden');
         },
         viewOne: function(ev) {
             console.log(this.type+' viewOne ',ev,ev.target.id);
@@ -266,8 +266,12 @@
                     return function(e) { 
                         aImg.src = e.target.result; 
                         filePicker.parent().find('.hidden-name').val(file.name);
+                        if (type === 'image') {
+                            $(aImg).removeClass('small'); 
+                            $(aImg).addClass('fullscreen'); 
+                        }
                     } 
-                })(filePicker.parent().parent().parent().find('.thumbnail')[0]);
+                })(filePicker.parent().parent().parent().find('img')[0]);
                 reader.readAsDataURL(file);
             }
             /*
@@ -393,14 +397,14 @@
 
             this.saveArticle();
         },
-        updateImageSection: function(ev) {
-            var sectionId = ev.target.id.split('-')[1];
-            console.log('updateImageSection', sectionId);
+        saveImageSection: function(ev) {
+            var sectionId = ev.target.id.split('-')[2];
+            console.log('saveImageSection', sectionId, $('#'+ev.target.id).parent().find('.hidden-name').val());
             console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
             var sections = YYYCollection.get(_ID).get('sections');
             sections[sectionId] = {
                 id: sectionId,
-                image: $('#update-image-preview-'+sectionId+'> p').html() 
+                image: $('#'+ev.target.id).parent().find('.hidden-name').val()
             };
             console.log(sections);
 
@@ -412,7 +416,7 @@
             var that = this;
             YYYCollection.get(_ID).save({},{
                 success: function() { 
-                    console.log('image section update success ' + YYYCollection.get(_ID).id + ' ' + YYYCollection.get(_ID).cid); 
+                    console.log('image section save success ' + YYYCollection.get(_ID).id + ' ' + YYYCollection.get(_ID).cid); 
 
                     $('#image-form-'+sectionId+' :hidden').val(YYYCollection.get(_ID).get('_rev'));
                     $('#image-form-'+sectionId).ajaxSubmit({

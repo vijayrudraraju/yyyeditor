@@ -6,8 +6,8 @@
     </a>
     <br/>
     <br/>
-    <button type="button" id="view-btn" class="button">final article</button>
-    <button type="button" id="home-btn" class="button">home</button>
+    <button type="button" id="view-btn" class="button red">final article</button>
+    <button type="button" id="home-btn" class="button red">home</button>
 </div>
 
 <div class="page-subheader">
@@ -20,46 +20,47 @@
 </div>
 {#sections}
     {#normText}
-    <div class="page-section page-section-{id}">
-        <div>{.|s}</div>
+<div class="page-section page-section-{id}">
+    <div>{.|s}</div>
     {/normText}
     {#text}
-        <textarea id="edit-text-input-{id}" name="text" rows="20">{.}</textarea>
-        <button type="button" id="save-text-button-{id}" class="save-text-section-button">save text</button>
-    </div>
+    <textarea id="edit-text-input-{id}" name="text" rows="20">{.}</textarea>
+    <button type="button" id="save-text-button-{id}" class="save-text-button">save text</button>
+</div>
     {/text}
     {#image}
-    <div class="page-section page-section-{id}">
-        <img class="fullscreen" src="/yyy/{page_id}/{.}"/>
-        <div id="image-interface-{id}">
-            <form id="image-form-{id}">
-                <input type="file" class="update-file-input" id="update-image-input-{id}" name="_attachments"/>
-                <input type="hidden" name="_rev"/>
-            </form>
-            <div id="update-image-preview-{id}"></div>
-            <button type="button" class="update-image-section-button" id="image-{id}">update image</button>
-        </div>
+<div class="page-section page-section-{id}">
+    <img class="fullscreen" src="/yyy/{page_id}/{.}"/>
+    <div class="file-input-interface" id="image-interface-{id}">
+        <button type="button" class="change-file-button" id="change-image-{id}">change image</button>
+        <form class="file-form" id="image-form-{id}">
+            <input type="file" class="change-file-input" id="change-image-input-{id}" name="_attachments"/>
+            <input type="hidden" name="_rev"/>
+            <input type="hidden" class="hidden-name" name="image"/>
+        </form>
+        <button type="button" class="save-image-button" id="save-image-{id}">save image</button>
     </div>
+</div>
     {/image}
     {#empty}
-    <div class="page-section page-section-{id}">
-        <img class="small" src="/yyy/{page_id}/((empty))"/>
-        <div id="image-interface-{id}">
-            <form id="image-form-{id}">
-                <input type="file" class="update-file-input" id="update-image-input-{id}" name="_attachments"/>
-                <input type="hidden" name="_rev"/>
-            </form>
-            <div id="update-image-preview-{id}"></div>
-            <button type="button" class="update-image-section-button" id="image-{id}">update image</button>
-        </div>
+<div class="page-section page-section-{id}">
+    <img class="small" src="/yyy/{page_id}/((empty))"/>
+    <div class="file-input-interface" id="image-interface-{id}">
+        <button type="button" class="change-file-button" id="change-image-{id}">change image</button>
+        <form class="file-form" id="image-form-{id}">
+            <input type="file" class="change-file-input" id="change-image-input-{id}" name="_attachments"/>
+            <input type="hidden" name="_rev"/>
+            <input type="hidden" class="hidden-name" name="image"/>
+        </form>
+        <button type="button" class="save-image-button" id="save-image-{id}">save image</button>
     </div>
+</div>
     {/empty}
 {/sections}
-
-<button type="button" id="add-text-section-btn" class="new-button">add text</button>
-<button type="button" id="add-image-section-btn" class="new-button">add image</button>
-<button type="button" id="add-video-section-btn" class="new-button">add video</button>
-<button type="button" id="add-music-section-btn" class="new-button">add music</button>
+<div class="page-section red">
+    <button type="button" id="add-text-section-button" class="space red">(+)add text</button>
+    <button type="button" id="add-image-section-button" class="space red">(+)add image</button>
+</div>
 
 <div class="page-footer">
     <h2><a href="../../">  HOME  </a>&#149<a href="">  PRINT MAG  </a>&#149<a href="mailto:yesyesyesmag@gmail.com" target="_blank">  SEND US WORK  </a>&#149<a href="http://www.facebook.com/yesyesyes.mag" target="_blank">  BE OUR FRIEND  </a></h2> 
