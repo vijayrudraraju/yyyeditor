@@ -88,28 +88,39 @@ div.red {
 }
 
 /* content structure */
+.invisible {
+    visibility: hidden;
+}
 @keyframes color {
-    from {background: blue;}
-    to {background: red;}
+    0% {background-color: green;}
+    50% {background-color: purple;}
+    100% {background-color: green;}
+}
+@keyframes border {
+    0% {border-color: green;}
+    50% {border-color: purple;}
+    100% {border-color: green;}
 }
 @-webkit-keyframes color {
-    from {background: yellow;}
-    to {background: red;}
+    0% {background-color: green;}
+    50% {background-color: purple;}
+    100% {background-color: green;}
 }
 @-webkit-keyframes border {
-    from {border-color: yellow;}
-    to {border-color: red;}
+    0% {border-color: green;}
+    50% {border-color: purple;}
+    100% {border-color: green;}
 }
 .blinking {
-    animation: color 1s;
+    animation: color 2s;
     animation-iteration-count: infinite;
-    -webkit-animation: color 1s;
+    -webkit-animation: color 2s;
     -webkit-animation-iteration-count: infinite;
 }
 .blinking-border {
-    animation: border 1s;
+    animation: border 2s;
     animation-iteration-count: infinite;
-    -webkit-animation: border 1s;
+    -webkit-animation: border 2s;
     -webkit-animation-iteration-count: infinite;
     border: 6px solid yellow;
     width: 144px;

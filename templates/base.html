@@ -1,6 +1,6 @@
 <!-- in /templates/base.html -->
 <div class="page-header">
-    <a>
+    <a href="http://www.yesyesyesmag.com" target="_blank">
         <h1>I NT E R NE T</h1>
         <h1>YES YES YES</h1>
     </a>
@@ -13,28 +13,28 @@
 <div class="page-subheader">
     <div class="box">
         <h2 class="title">{title}</h2>
-        <button type="button" id="save-title-button" class="button">save title</button>
-        <input id="edit-title-input" type="text" value="{title}" placeholder="{title}" name="title"/>
+        <button type="button" id="save-title-button" class="invisible">save change</button>
+        <input id="edit-title-input" type="text" value="{title}" placeholder="title" name="title"/>
     </div>
     <div class="box">
         <h2 class="author">by {author}</h2>
-        <button type="button" id="save-author-button" class="button">save author</button>
-        <input id="edit-author-input" type="text" value="{author}" placeholder="{author}" name="author"/>
+        <button type="button" id="save-author-button" class="invisible">save change</button>
+        <input id="edit-author-input" type="text" value="{author}" placeholder="author" name="author"/>
     </div>
 </div>
 {#sections}
     {#normText}
-<div class="page-section page-section-{id}">
+<div class="page-section page-section-{id} text-section">
     <div>{.|s}</div>
     {/normText}
     {#text}
     <textarea id="edit-text-input-{id}" name="text" rows="20">{.}</textarea>
-    <button type="button" id="save-text-button-{id}" class="save-text-button">save text</button>
+    <button type="button" id="save-text-button-{id}" class="save-text-button invisible">save change</button>
     <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove text</button>
 </div>
     {/text}
     {#image}
-<div class="page-section page-section-{id}">
+<div class="page-section page-section-{id} image-section">
     <img class="fullscreen" src="/yyy/{page_id}/{.}"/>
     <div class="file-input-interface" id="image-interface-{id}">
         <button type="button" class="change-file-button" id="change-image-{id}">change image</button>
@@ -43,13 +43,13 @@
             <input type="hidden" name="_rev"/>
             <input type="hidden" class="hidden-name" name="image"/>
         </form>
-        <button type="button" class="save-image-button" id="save-image-{id}">save image</button>
+        <button type="button" class="save-image-button invisible" id="save-image-{id}">save change</button>
         <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove image</button>
     </div>
 </div>
     {/image}
     {#empty}
-<div class="page-section page-section-{id}">
+<div class="page-section page-section-{id} image-section">
     <img class="small" src="/yyy/{page_id}/((empty))"/>
     <div class="file-input-interface" id="image-interface-{id}">
         <button type="button" class="change-file-button" id="change-image-{id}">change image</button>
@@ -58,21 +58,21 @@
             <input type="hidden" name="_rev"/>
             <input type="hidden" class="hidden-name" name="image"/>
         </form>
-        <button type="button" class="save-image-button" id="save-image-{id}">save image</button>
+        <button type="button" class="save-image-button invisible" id="save-image-{id}">save change</button>
         <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove image</button>
     </div>
 </div>
     {/empty}
     {#link}
-<div class="page-section page-section-{id}">
+<div class="page-section page-section-{id} link-section">
         <a href="{link}" target="_blank"><h2 class="url">{display}</h2></a>
         <label for="edit-link-input">url</label>
-        <input id="edit-link-input-{id}" type="text" value="{link}" placeholder="link url" name="link"/>
+        <input id="edit-link-input-{id}" class="edit-link" type="text" value="{link}" placeholder="link url" name="link"/>
         <br/>
         <label for="edit-display-input">displayed text</label>
-        <input id="edit-display-input-{id}" type="text" value="{display}" placeholder="displayed text" name="display"/>
+        <input id="edit-display-input-{id}" class="edit-display" type="text" value="{display}" placeholder="displayed text" name="display"/>
         <br/>
-        <button type="button" class="save-link-button" id="save-link-button-{id}" class="">save link</button>
+        <button type="button" class="save-link-button invisible" id="save-link-button-{id}">save change</button>
         <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove link</button>
 </div>
     {/link}

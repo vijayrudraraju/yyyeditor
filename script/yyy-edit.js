@@ -72,16 +72,12 @@
     window.PageModel= Backbone.Model.extend({
         url: '/pages'
     }); 
-    //window.YYYCollectionClass = {};
     window.YYYCollectionClass = Backbone.Collection.extend({
         model: window.PageModel,
-        //pouch: Backbone.sync.pouch('idb://'+_DBNAME)
         db: {
             view: "all" 
         }
     });
-    //window.YYYCollection = {};
-    //window.YYYCollection['all'] = new YYYCollectionClass['all'];
     window.YYYCollection = new YYYCollectionClass;
     window.YYYCollection.comparator = function(a,b) {
         return b.get('unix_creation_time') - a.get('unix_creation_time');
@@ -98,32 +94,41 @@
             }
         };
     }
-    var createArray = ['#create-text-section', '#create-image-section', '#create-video-section', '#create-music-section'];
-    var createToggle = generateToggler(createArray);
+
     var interfaceArray = ['#nav-interface', '#preview-interface', '#create-interface', '#loading-interface'];
     var interfaceToggle = generateToggler(interfaceArray);
     function loading() {
+        _SNEAKY.sneak();
         interfaceToggle(3);
+    }
+    function loadedNav() {
+        interfaceToggle(0);
+        _SNEAKY.scroll();
+    }
+    function loadedPreview() {
+        interfaceToggle(1);
+        _SNEAKY.scroll();
     }
     function loadPage() {
         $.get('/'+_DBNAME+'/_design/'+_EDITDOCNAME+'/_show/'+'article/'+_ID, function(data) {
-            console.log(data);
             $('#preview-interface').html(data);
-            interfaceToggle(1);
-            _SNEAKY.scroll();
+
             _SECTIONS.push($('#preview-interface').find('#edit-title-input').val());
             _SECTIONS.push($('#preview-interface').find('#edit-author-input').val());
             var textareas = $('#preview-interface').find('.page-section > textarea');
-            /*
-            for (var i=0;i<textareas.length;i++) {
-                _SECTIONS.push(textareas[i].val()); 
-            }
-            */
             textareas.each(function() {
-                _SECTIONS.push($(this).val());
+                _SECTIONS[parseInt($(this).attr('id').split('-')[3])+2] = $(this).val();
+            });
+            var links = $('#preview-interface').find('.link-section');
+            links.each(function() {
+                _SECTIONS[parseInt($(this).find('.edit-link').attr('id').split('-')[3])+2] = [
+                    $(this).find('.edit-link').val(),
+                    $(this).find('.edit-display').val()
+                ];
             });
             console.log('_SECTIONS',_SECTIONS);
-            // check for non-existent images
+
+            loadedPreview();
         });
     }
 
@@ -132,22 +137,13 @@
         if (newHash === '') {
             $.hash.go('/home');
         } else if (newHash === '/home') {
-            console.log('init');
-            createToggle();
-            interfaceToggle(0);
-        } else if (newHash === '/text') {
-            createToggle(0);
-        } else if (newHash === '/image') {
-            createToggle(1);
-        } else if (newHash === '/video') {
-            createToggle(2);
-        } else if (newHash === '/music') {
-            createToggle(3);
+            loading();
+            window.AllView.refresh();
         } else if (newHash.indexOf('/modify') !== -1) {
             var id = newHash.indexOf('/',1);
             _ID = newHash.slice(id+1);
             console.log('modify',_ID);
-            _SNEAKY.sneak();
+
             loadPage();
         }
     });
@@ -180,29 +176,48 @@
         $('input[type=text]').live('keyup change', function() {
             if ($(this).parent().find('.title').is('*')) {
                 if ($(this).val() !== _SECTIONS[0]) {
-                    $(this).parent().find('.button').addClass('blinking');
+                    $(this).parent().find('button').addClass('blinking').removeClass('invisible');
                     $(this).parent().addClass('blinking-section-border');
                 } else {
-                    $(this).parent().find('.button').removeClass('blinking');
+                    $(this).parent().find('button').removeClass('blinking').addClass('invisible');
                     $(this).parent().removeClass('blinking-section-border');
                 }
             } else if ($(this).parent().find('.author').is('*')) {
                 if ($(this).val() !== _SECTIONS[1]) {
-                    $(this).parent().find('.button').addClass('blinking');
+                    $(this).parent().find('button').addClass('blinking').removeClass('invisible');
                     $(this).parent().addClass('blinking-section-border');
                 } else {
-                    $(this).parent().find('.button').removeClass('blinking');
+                    $(this).parent().find('button').removeClass('blinking').addClass('invisible');
+                    $(this).parent().removeClass('blinking-section-border');
+                }
+            } else if ($(this).hasClass('edit-link')) {
+                var sectionId = parseInt($(this).attr('id').split('-')[3]);
+                console.log(sectionId,$(this).val(),_SECTIONS[sectionId][0]);
+                if ($(this).val() !== _SECTIONS[sectionId+2][0]) {
+                    $(this).parent().find('.save-link-button').addClass('blinking').removeClass('invisible');
+                    $(this).parent().addClass('blinking-section-border');
+                } else {
+                    $(this).parent().find('.save-link-button').removeClass('blinking').addClass('invisible');
+                    $(this).parent().removeClass('blinking-section-border');
+                }
+            } else if ($(this).hasClass('edit-display')) {
+                var sectionId = parseInt($(this).attr('id').split('-')[3]);
+                if ($(this).val() !== _SECTIONS[sectionId+2][1]) {
+                    $(this).parent().find('.save-link-button').addClass('blinking').removeClass('invisible');
+                    $(this).parent().addClass('blinking-section-border');
+                } else {
+                    $(this).parent().find('.save-link-button').removeClass('blinking').addClass('invisible');
                     $(this).parent().removeClass('blinking-section-border');
                 }
             }
         });
         $('textarea').live('keyup change', function() {
             var sectionId = parseInt($(this).attr('id').split('-')[3]);
-            if ($(this).val() !== _SECTIONS[sectionId]) {
-                $(this).parent().find('.save-text-button').addClass('blinking');
+            if ($(this).val() !== _SECTIONS[sectionId+2]) {
+                $(this).parent().find('.save-text-button').addClass('blinking').removeClass('invisible');
                 $(this).parent().addClass('blinking-section-border');
             } else {
-                $(this).parent().find('.save-text-button').removeClass('blinking');
+                $(this).parent().find('.save-text-button').removeClass('blinking').addClass('invisible');
                 $(this).parent().removeClass('blinking-section-border');
             }
         });
@@ -247,13 +262,19 @@
             }});
         },
         refresh: function() {
-            window.YYYCollection.fetch({success: function() { console.log('refresh fetch success');}});
+            window.YYYCollection.fetch({
+                success: function() { 
+                    loadedNav();
+                    console.log('refresh fetch success');
+                }
+            });
         },
         onReset: function(coll,resp) {
             console.log('onReset');
 
             $('#nav-grid').html('');
             window.YYYCollection.each(this.addOne, this);
+            _SNEAKY.scroll();
         },
         goHome: function(ev) {
             console.log('goHome', ev);
@@ -278,7 +299,7 @@
                 '<button type="button" class="change-file-button" id="change-cover-'+model.id+'">change cover</button>' +
                 '<form class="file-form" id="cover-form-'+model.id+'"><input type="file" class="change-file-input" id="update-cover-input-'+model.id+'" name="_attachments"/><input type="hidden" name="_rev"/><input class="hidden-name" type="hidden" name="cover_name"/></form>' + 
                 '</div>' +
-                '<button type="button" class="save-cover-button" id="save-cover-'+model.id+'">save cover</button>' +
+                '<button type="button" class="save-cover-button invisible" id="save-cover-'+model.id+'">save change</button>' +
                 '<br/>' +
                 '<button type="button" class="edit-button red" id="edit-'+model.id+'">edit article</button>' +
                 '<button type="button" class="remove-button serious" id="remove-'+model.id+'">(-)remove</button>' +
@@ -298,14 +319,13 @@
             window.open('/'+_DBNAME+'/_design/one/_show/'+this.selectedTemplate+'Article/'+this.selectedId);
         },
         editArticle: function(ev) {
+            loading();
             console.log('trigger editArticle',ev,ev.target.id);
 
-            var stringArray = ev.target.id.split('-');
-
-            this.selectedId = stringArray[1];
             var that = this;
+            var id = ev.target.id.split('-')[1];
 
-            $.hash.go('/modify/'+that.selectedId);
+            $.hash.go('/modify/'+id);
         },
         refreshCover: function(ev) {
             var id = ev.target.id.split('-')[3];
@@ -322,14 +342,14 @@
                         aImg.src = e.target.result; 
                         filePicker.parent().find('.hidden-name').val(file.name);
                         if (type === 'cover') {
-                            filePicker.parent().parent().parent().find('.save-cover-button').addClass('blinking');
+                            filePicker.parent().parent().parent().find('.save-cover-button').addClass('blinking').removeClass('invisible');
                             filePicker.parent().parent().parent().find('.link').addClass('blinking-border');
                             filePicker.parent().parent().parent().find('.thumbnail').addClass('bordered');
                             filePicker.parent().parent().parent().find('.label').addClass('bordered');
                         } else if (type === 'image') {
                             $(aImg).removeClass('small'); 
                             $(aImg).addClass('fullscreen').addClass('bordered-section'); 
-                            filePicker.parent().parent().find('.save-image-button').addClass('blinking');
+                            filePicker.parent().parent().find('.save-image-button').addClass('blinking').removeClass('invisible');
                             filePicker.parent().parent().parent().addClass('blinking-section-border');
                         }
                     } 
@@ -348,9 +368,12 @@
             */
         },
         addArticle: function() {
-            console.log('removeArticle');
+            loading();
+            console.log('addArticle', window);
 
-            YYYCollection.add({
+            var that = this;
+
+            window.YYYCollection.add({
                 title:'((empty))',
                 author:'((empty))',
                 sections: [{id:0,text:'((empty))'}],
@@ -358,22 +381,20 @@
                 unix_creation_time: _DATE.getTime(),
                 unix_modified_time: _DATE.getTime()
             });
+            // comparator will automatically insert at the beginning
 
-            YYYCollection.at(YYYCollection.length-1).save({},{
+            window.YYYCollection.at(0).save({},{
                 success: function() { 
-                    console.log('model save success ' + YYYCollection.at(YYYCollection.length-1).id + ' ' + YYYCollection.at(YYYCollection.length-1).cid); 
-
-                    YYYCollection.fetch({
-                        success: function() { 
-                            console.log('post-create new article save fetch success');
-                        }
-                    });
+                    console.log('model save success ' + YYYCollection.at(0).id + ' ' + YYYCollection.at(0).cid); 
+                    that.refresh();
                 }
             });
         },
         removeArticle: function(ev) {
+            loading();
             console.log('removeArticle');
 
+            var that = this;
             var id = ev.target.id.split('-')[1];
 
             YYYCollection.get(id).set({
@@ -384,15 +405,13 @@
             YYYCollection.get(id).save({},{
                 success: function() { 
                     console.log('article remove success ' + YYYCollection.get(id).id + ' ' + YYYCollection.get(id).cid); 
-                    YYYCollection.fetch({
-                        success: function() { 
-                            console.log('post-remove article fetch success');
-                        }
-                    });
+                    that.refresh();
                 } 
             });
         },
         addTextSection: function(ev) {
+            loading();
+
             console.log('addTextSection', YYYCollection.get(_ID).get('sections'));
             var sections = YYYCollection.get(_ID).get('sections');
             if (sections.length) {
@@ -415,6 +434,8 @@
             this.saveArticle();
         },
         addImageSection: function(ev) {
+            loading();
+
             console.log('addImageSection', YYYCollection.get(_ID).get('sections'));
             var sections = YYYCollection.get(_ID).get('sections');
             if (sections.length) {
@@ -437,6 +458,8 @@
             this.saveArticle();
         },
         addLinkSection: function(ev) {
+            loading();
+
             console.log('addLinkSection', YYYCollection.get(_ID).get('sections'));
             var sections = YYYCollection.get(_ID).get('sections');
             if (sections.length) {
@@ -461,6 +484,8 @@
             this.saveArticle();
         },
         removeSection: function(ev) {
+            loading();
+
             var sectionId = parseInt(ev.target.id.split('-')[3]);
             var sections = YYYCollection.get(_ID).get('sections');
 
@@ -482,9 +507,12 @@
             this.saveArticle();
         },
         saveCover: function(ev) {
+            loading();
+
+            console.log('saveCover',ev.target.id,id);
+
             var that = this;
             var id = ev.target.id.split('-')[2];
-            console.log('saveCover',ev.target.id,id);
 
             YYYCollection.get(id).set({
                 cover_name:$('#'+ev.target.id).parent().find('.hidden-name').val(),
@@ -503,8 +531,7 @@
                         dataType: 'json',
                         success: function(data) {
                             console.log('cover image upload success!');
-                            console.log(data);
-                            filePicker.parent().parent().parent().find('.save-cover-button').removeClass('blinking');
+                            filePicker.parent().parent().parent().find('.save-cover-button').removeClass('blinking').addClass('invisible');
                             filePicker.parent().parent().parent().find('.link').removeClass('blinking-border');
                             filePicker.parent().parent().parent().find('.thumbnail').removeClass('bordered');
                             filePicker.parent().parent().parent().find('.label').removeClass('bordered');
@@ -515,6 +542,8 @@
             });
         },
         saveTitle: function(ev) {
+            loading();
+
             console.log('saveTitle',window.location.hash);
 
             YYYCollection.get(_ID).set({
@@ -525,6 +554,8 @@
             this.saveArticle();
         },
         saveAuthor: function() {
+            loading();
+
             console.log('saveAuthor',window.location.hash);
 
             YYYCollection.get(_ID).set({
@@ -535,6 +566,8 @@
             this.saveArticle();
         },
         saveTextSection: function(ev) {
+            loading();
+
             var sectionId = parseInt(ev.target.id.split('-')[3]);
             var sections = YYYCollection.get(_ID).get('sections');
             console.log('saveTextSection', sectionId);
@@ -558,6 +591,8 @@
             this.saveArticle();
         },
         saveImageSection: function(ev) {
+            loading();
+
             var sectionId = parseInt(ev.target.id.split('-')[2]);
             var sections = YYYCollection.get(_ID).get('sections');
             console.log('saveImageSection', sectionId, $('#'+ev.target.id).parent().find('.hidden-name').val());
@@ -594,7 +629,7 @@
                             console.log('image section upload success!');
                             console.log(data);
                             filePicker.parent().parent().parent().removeClass('bordered-section'); 
-                            filePicker.parent().parent().find('.save-image-button').removeClass('blinking');
+                            filePicker.parent().parent().find('.save-image-button').removeClass('blinking').addClass('invisible');
                             filePicker.parent().parent().parent().removeClass('blinking-section-border');
                             that.refresh(); 
                             loadPage();
@@ -628,8 +663,6 @@
             this.saveArticle();
         },
         saveArticle: function() {
-            _SNEAKY.sneak();
-            loading();
             YYYCollection.get(_ID).save({},{
                 success: function() { 
                     console.log('article update success ' + YYYCollection.get(_ID).id + ' ' + YYYCollection.get(_ID).cid); 
