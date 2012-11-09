@@ -62,9 +62,14 @@
     {/empty}
     {#link}
 <div class="page-section page-section-{id}">
-        <h2 class="author">{author}</h2>
-        <button type="button" id="save-author-button" class="button">save author</button>
-        <input id="edit-author-input" type="text" value="{author}" placeholder="{author}" name="author"/>
+        <a href="{link}" target="_blank"><h2 class="url">{display}</h2></a>
+        <label for="edit-link-input">url</label>
+        <input id="edit-link-input-{id}" type="text" value="{link}" placeholder="link url" name="link"/>
+        <br/>
+        <label for="edit-display-input">displayed text</label>
+        <input id="edit-display-input-{id}" type="text" value="{display}" placeholder="displayed text" name="display"/>
+        <br/>
+        <button type="button" class="save-link-button" id="save-link-button-{id}" class="">save link</button>
 </div>
     {/link}
 {/sections}

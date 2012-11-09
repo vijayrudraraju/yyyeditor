@@ -150,6 +150,16 @@ textarea {
 input[type=text] {
     width: 400px;
     color: blue;
+    margin: 15px;
+}
+.box > button {
+    margin: 15px;
+}
+.page-section > button {
+    margin: 15px;
+}
+.page-section > label {
+    margin: 15px;
 }
 button.red {
     background-color: yellow;

@@ -219,12 +219,13 @@
 
             "click #add-text-section-button": "addTextSection",
             "click #add-image-section-button": "addImageSection",
-            "click #add-link-section-button": "addTextSection",
+            "click #add-link-section-button": "addLinkSection",
 
             "click #save-title-button": "saveTitle",
             "click #save-author-button": "saveAuthor",
             "click .save-text-button" : "saveTextSection",
             "click .save-image-button" : "saveImageSection",
+            "click .save-link-button" : "saveLinkSection",
         },
         initialize: function() {
             // helpful state and identity variables
@@ -395,7 +396,7 @@
             var sections = YYYCollection.get(_ID).get('sections');
             sections.push({
                 id: sections.length,
-                link: '((empty))'
+                link: '((empty))',
                 display: '((empty))'
             });
 
@@ -451,6 +452,7 @@
 
             YYYCollection.get(_ID).set({
                 author:$('#edit-author-input').val(),
+                unix_modified_time: _DATE.getTime()
             });
 
             this.saveArticle();
@@ -467,7 +469,8 @@
             console.log(sections);
 
             YYYCollection.get(_ID).set({
-                sections: sections
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
             });
 
             this.saveArticle();
@@ -511,6 +514,26 @@
                     });
                 } 
             });
+        },
+        saveLinkSection: function(ev) {
+            var sectionId = ev.target.id.split('-')[3];
+            console.log('saveLinkSection', sectionId);
+            console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
+
+            var sections = YYYCollection.get(_ID).get('sections');
+            sections[sectionId] = {
+                id: sectionId,
+                link: $('#edit-link-input-'+sectionId).val(),
+                display: $('#edit-display-input-'+sectionId).val()
+            };
+            console.log(sections);
+
+            YYYCollection.get(_ID).set({
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
+            });
+
+            this.saveArticle();
         },
         saveArticle: function() {
             _SNEAKY.sneak();
