@@ -197,7 +197,7 @@
             }
         });
         $('textarea').live('keyup change', function() {
-            var sectionId = $(this).attr('id').split('-')[3];
+            var sectionId = parseInt($(this).attr('id').split('-')[3]);
             if ($(this).val() !== _SECTIONS[sectionId]) {
                 $(this).parent().find('.save-text-button').addClass('blinking');
                 $(this).parent().addClass('blinking-section-border');
@@ -217,9 +217,13 @@
             "change .change-file-input": "refreshCover",
             "click .save-cover-button" : "saveCover",
 
+            "click .remove-button": "removeArticle",
+
             "click #add-text-section-button": "addTextSection",
             "click #add-image-section-button": "addImageSection",
             "click #add-link-section-button": "addLinkSection",
+
+            "click .remove-section-button": "removeSection",
 
             "click #save-title-button": "saveTitle",
             "click #save-author-button": "saveAuthor",
@@ -243,8 +247,7 @@
             }});
         },
         refresh: function() {
-            interfaceToggle(3);
-            window.YYYCollection.fetch({success: function() { console.log(this.type, 'refresh fetch success');}});
+            window.YYYCollection.fetch({success: function() { console.log('refresh fetch success');}});
         },
         onReset: function(coll,resp) {
             console.log('onReset');
@@ -258,10 +261,14 @@
         },
         addOne: function(model) {
             console.log(model, model.get('title'), model.get('cover_name'), 'addOne');
-            var linkText = '_show/article/'+model.id;
+            if (window.location.hostname === 'localhost') {
+                var linkText = 'http://localhost:5984/'+_DBNAME+'/_design/one/_show/article/'+model.id;
+            } else {
+                var linkText = 'http://www.yesyesyesmag.com/_show/article/'+model.id;
+            }
             var str = 
                 '<li class="cell">' +
-                '<a class="link" href="'+linkText+'">' + 
+                '<a class="link" href="'+linkText+'" target="_blank">' + 
                 '<img class="thumbnail" src="/'+_DBNAME+'/'+model.id+'/'+model.get('cover_name')+'"/>' +
                 '<div class="label">' +
                 '<h3>'+model.get('author')+'</h3>' +
@@ -274,6 +281,7 @@
                 '<button type="button" class="save-cover-button" id="save-cover-'+model.id+'">save cover</button>' +
                 '<br/>' +
                 '<button type="button" class="edit-button red" id="edit-'+model.id+'">edit article</button>' +
+                '<button type="button" class="remove-button serious" id="remove-'+model.id+'">(-)remove</button>' +
                 '</li>';
             $('#nav-grid').append(str).find('.label').css('visibility','hidden');
         },
@@ -340,7 +348,7 @@
             */
         },
         addArticle: function() {
-            console.log('saveNewToServer');
+            console.log('removeArticle');
 
             YYYCollection.add({
                 title:'((empty))',
@@ -363,16 +371,45 @@
                 }
             });
         },
+        removeArticle: function(ev) {
+            console.log('removeArticle');
+
+            var id = ev.target.id.split('-')[1];
+
+            YYYCollection.get(id).set({
+                removed: true,
+                unix_modified_time: _DATE.getTime()
+            });
+
+            YYYCollection.get(id).save({},{
+                success: function() { 
+                    console.log('article remove success ' + YYYCollection.get(id).id + ' ' + YYYCollection.get(id).cid); 
+                    YYYCollection.fetch({
+                        success: function() { 
+                            console.log('post-remove article fetch success');
+                        }
+                    });
+                } 
+            });
+        },
         addTextSection: function(ev) {
             console.log('addTextSection', YYYCollection.get(_ID).get('sections'));
             var sections = YYYCollection.get(_ID).get('sections');
-            sections.push({
-                id: sections.length,
-                text: '((empty))'
-            });
+            if (sections.length) {
+                sections.push({
+                    id: sections[sections.length-1].id+1,
+                    text: '((empty))'
+                });
+            } else {
+                sections.push({
+                    id: 0,
+                    text: '((empty))'
+                });
+            }
 
             YYYCollection.get(_ID).set({
-                sections: sections
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
             });
 
             this.saveArticle();
@@ -380,13 +417,21 @@
         addImageSection: function(ev) {
             console.log('addImageSection', YYYCollection.get(_ID).get('sections'));
             var sections = YYYCollection.get(_ID).get('sections');
-            sections.push({
-                id: sections.length,
-                image: ''
-            });
+            if (sections.length) {
+                sections.push({
+                    id: sections[sections.length-1].id+1,
+                    image: ''
+                });
+            } else {
+                sections.push({
+                    id: 0,
+                    image: ''
+                });
+            }
 
             YYYCollection.get(_ID).set({
-                sections: sections
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
             });
 
             this.saveArticle();
@@ -394,19 +439,50 @@
         addLinkSection: function(ev) {
             console.log('addLinkSection', YYYCollection.get(_ID).get('sections'));
             var sections = YYYCollection.get(_ID).get('sections');
-            sections.push({
-                id: sections.length,
-                link: '((empty))',
-                display: '((empty))'
-            });
+            if (sections.length) {
+                sections.push({
+                    id: sections[sections.length-1].id+1,
+                    link: '((empty))',
+                    display: '((empty))'
+                });
+            } else {
+                sections.push({
+                    id: 0,
+                    link: '((empty))',
+                    display: '((empty))'
+                });
+            }
 
             YYYCollection.get(_ID).set({
-                sections: sections
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
+            });
+
+            this.saveArticle();
+        },
+        removeSection: function(ev) {
+            var sectionId = parseInt(ev.target.id.split('-')[3]);
+            var sections = YYYCollection.get(_ID).get('sections');
+
+            console.log('removeSection', YYYCollection.get(_ID).get('sections'), sectionId);
+
+            for (var i=0;i<sections.length;i++) {
+                console.log(sections[i].id,sectionId,sections[i].id === sectionId);
+                if (parseInt(sections[i].id) === parseInt(sectionId)) {
+                    console.log('splicing',i,'from sections');
+                    sections.splice(i,1);
+                }
+            }
+
+            YYYCollection.get(_ID).set({
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
             });
 
             this.saveArticle();
         },
         saveCover: function(ev) {
+            var that = this;
             var id = ev.target.id.split('-')[2];
             console.log('saveCover',ev.target.id,id);
 
@@ -432,6 +508,7 @@
                             filePicker.parent().parent().parent().find('.link').removeClass('blinking-border');
                             filePicker.parent().parent().parent().find('.thumbnail').removeClass('bordered');
                             filePicker.parent().parent().parent().find('.label').removeClass('bordered');
+                            that.refresh(); 
                         }
                     });
                 } 
@@ -458,14 +535,19 @@
             this.saveArticle();
         },
         saveTextSection: function(ev) {
-            var sectionId = ev.target.id.split('-')[3];
+            var sectionId = parseInt(ev.target.id.split('-')[3]);
+            var sections = YYYCollection.get(_ID).get('sections');
             console.log('saveTextSection', sectionId);
             console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
-            var sections = YYYCollection.get(_ID).get('sections');
-            sections[sectionId] = {
-                id: sectionId,
-                text: $('#edit-text-input-'+sectionId).val() 
-            };
+
+            for (var i=0;i<sections.length;i++) {
+                if (parseInt(sections[i].id) === parseInt(sectionId)) {
+                    sections[i] = {
+                        id: sectionId,
+                        text: $('#edit-text-input-'+sectionId).val() 
+                    };
+                }
+            }
             console.log(sections);
 
             YYYCollection.get(_ID).set({
@@ -476,14 +558,19 @@
             this.saveArticle();
         },
         saveImageSection: function(ev) {
-            var sectionId = ev.target.id.split('-')[2];
+            var sectionId = parseInt(ev.target.id.split('-')[2]);
+            var sections = YYYCollection.get(_ID).get('sections');
             console.log('saveImageSection', sectionId, $('#'+ev.target.id).parent().find('.hidden-name').val());
             console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
-            var sections = YYYCollection.get(_ID).get('sections');
-            sections[sectionId] = {
-                id: sectionId,
-                image: $('#'+ev.target.id).parent().find('.hidden-name').val()
-            };
+
+            for (var i=0;i<sections.length;i++) {
+                if (parseInt(sections[i].id) === parseInt(sectionId)) {
+                    sections[i] = {
+                        id: sectionId,
+                       image: $('#'+ev.target.id).parent().find('.hidden-name').val()
+                    };
+                }
+            }
             console.log(sections);
 
 
@@ -509,6 +596,7 @@
                             filePicker.parent().parent().parent().removeClass('bordered-section'); 
                             filePicker.parent().parent().find('.save-image-button').removeClass('blinking');
                             filePicker.parent().parent().parent().removeClass('blinking-section-border');
+                            that.refresh(); 
                             loadPage();
                         }
                     });
@@ -516,16 +604,20 @@
             });
         },
         saveLinkSection: function(ev) {
-            var sectionId = ev.target.id.split('-')[3];
+            var sectionId = parseInt(ev.target.id.split('-')[3]);
             console.log('saveLinkSection', sectionId);
             console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
 
             var sections = YYYCollection.get(_ID).get('sections');
-            sections[sectionId] = {
-                id: sectionId,
-                link: $('#edit-link-input-'+sectionId).val(),
-                display: $('#edit-display-input-'+sectionId).val()
-            };
+            for (var i=0;i<sections.length;i++) {
+                if (parseInt(sections[i].id) === parseInt(sectionId)) {
+                    sections[i] = {
+                        id: sectionId,
+                        link: $('#edit-link-input-'+sectionId).val(),
+                        display: $('#edit-display-input-'+sectionId).val()
+                    };
+                }
+            }
             console.log(sections);
 
             YYYCollection.get(_ID).set({

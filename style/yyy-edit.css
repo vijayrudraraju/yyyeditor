@@ -170,6 +170,15 @@ button.red:hover {
 button.red:active {
     background-color: blue;
 }
+button.serious {
+    background-color: red;
+}
+button.serious:hover {
+    background-color: black;
+}
+button.serious:active {
+    background-color: white;
+}
 
 /* tabs */
 .tabs {

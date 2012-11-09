@@ -6,7 +6,7 @@
     </a>
     <br/>
     <br/>
-    <button type="button" id="view-btn" class="button red">final article</button>
+    <a href="http://www.yesyesyesmag.com/_show/article/{page_id}" target="_blank"><button type="button" id="view-btn" class="button red">final article</button></a>
     <button type="button" id="home-btn" class="button red">home</button>
 </div>
 
@@ -30,6 +30,7 @@
     {#text}
     <textarea id="edit-text-input-{id}" name="text" rows="20">{.}</textarea>
     <button type="button" id="save-text-button-{id}" class="save-text-button">save text</button>
+    <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove text</button>
 </div>
     {/text}
     {#image}
@@ -43,6 +44,7 @@
             <input type="hidden" class="hidden-name" name="image"/>
         </form>
         <button type="button" class="save-image-button" id="save-image-{id}">save image</button>
+        <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove image</button>
     </div>
 </div>
     {/image}
@@ -57,6 +59,7 @@
             <input type="hidden" class="hidden-name" name="image"/>
         </form>
         <button type="button" class="save-image-button" id="save-image-{id}">save image</button>
+        <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove image</button>
     </div>
 </div>
     {/empty}
@@ -70,6 +73,7 @@
         <input id="edit-display-input-{id}" type="text" value="{display}" placeholder="displayed text" name="display"/>
         <br/>
         <button type="button" class="save-link-button" id="save-link-button-{id}" class="">save link</button>
+        <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove link</button>
 </div>
     {/link}
 {/sections}
