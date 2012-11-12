@@ -257,7 +257,7 @@
             window.YYYCollection.on('reset', this.onReset, this);
             loading();
             window.YYYCollection.fetch({success: function(coll, resp) { 
-                console.log(coll,resp,'initial fetch success');
+                //console.log(coll,resp,'initial fetch success');
                 $.hash.init();
             }});
         },
@@ -281,7 +281,7 @@
             $.hash.go('/home');
         },
         addOne: function(model) {
-            console.log(model, model.get('title'), model.get('cover_name'), 'addOne');
+            //console.log(model, model.get('title'), model.get('cover_name'), 'addOne');
             if (window.location.hostname === 'localhost') {
                 var linkText = 'http://localhost:5984/'+_DBNAME+'/_design/one/_show/article/'+model.id;
             } else {
@@ -297,7 +297,7 @@
                 '</div></a>' + 
                 '<div class="file-input-interface" id="cover-interface-'+model.id+'">' +
                 '<button type="button" class="change-file-button" id="change-cover-'+model.id+'">change cover</button>' +
-                '<form class="file-form" id="cover-form-'+model.id+'"><input type="file" class="change-file-input" id="update-cover-input-'+model.id+'" name="_attachments"/><input type="hidden" name="_rev"/><input class="hidden-name" type="hidden" name="cover_name"/></form>' + 
+                '<form class="file-form" id="cover-form-'+model.id+'"><input type="file" class="change-file-input" id="update-cover-input-'+model.id+'" name="_attachments"/><input id="update-cover-rev-'+model.id+'" type="hidden" name="_rev"/><input class="hidden-name" type="hidden" name="cover_name"/></form>' + 
                 '</div>' +
                 '<button type="button" class="save-cover-button invisible" id="save-cover-'+model.id+'">save change</button>' +
                 '<br/>' +
@@ -522,13 +522,20 @@
             YYYCollection.get(id).save({},{
                 success: function() { 
                     console.log('cover save success ' + YYYCollection.get(id).id + ' ' + YYYCollection.get(id).cid); 
+
                     var filePicker = $('#update-cover-input-'+id);
 
-                    $('#cover-form-'+id+' :hidden').val(YYYCollection.get(id).get('_rev'));
-                    $('#cover-form-'+id).ajaxSubmit({
+                    var formData = new FormData();
+                    formData.append('_attachments',filePicker[0].files[0]);
+                    formData.append('_rev',YYYCollection.get(id).get('_rev'));
+
+                    $.ajax({
                         url: '/'+_DBNAME+'/'+id,
                         type: 'post',
-                        dataType: 'json',
+                        data: formData,
+                        cache: false,
+                        contentType: 'image/jpeg',
+                        processData: false,
                         success: function(data) {
                             console.log('cover image upload success!');
                             filePicker.parent().parent().parent().find('.save-cover-button').removeClass('blinking').addClass('invisible');
@@ -536,6 +543,9 @@
                             filePicker.parent().parent().parent().find('.thumbnail').removeClass('bordered');
                             filePicker.parent().parent().parent().find('.label').removeClass('bordered');
                             that.refresh(); 
+                        },
+                        error: function(data) {
+                            console.log('cover image upload error!', data);
                         }
                     });
                 } 
@@ -621,10 +631,18 @@
 
                     $('#image-form-'+sectionId+' :hidden').val(YYYCollection.get(_ID).get('_rev'));
                     var filePicker = $('#change-image-input-'+sectionId);
+                    var formData = new FormData();
+                    formData.append('_attachments',filePicker[0].files[0]);
+                    formData.append('_rev',YYYCollection.get(id).get('_rev'));
+
                     $('#image-form-'+sectionId).ajaxSubmit({
+                    //$.ajax({
                         url: '/'+_DBNAME+'/'+_ID,
                         type: 'post',
-                        dataType: 'json',
+                        data: formData,
+                        cache: false,
+                        contentType: false,
+                        //processData: false,
                         success: function(data) {
                             console.log('image section upload success!');
                             console.log(data);

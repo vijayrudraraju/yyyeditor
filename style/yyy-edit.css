@@ -101,12 +101,22 @@ div.red {
     50% {border-color: purple;}
     100% {border-color: green;}
 }
-@-webkit-keyframes color {
+@-webkit-keyframes webkitColor {
     0% {background-color: green;}
     50% {background-color: purple;}
     100% {background-color: green;}
 }
-@-webkit-keyframes border {
+@-webkit-keyframes webkitBorder {
+    0% {border-color: green;}
+    50% {border-color: purple;}
+    100% {border-color: green;}
+}
+@-moz-keyframes mozColor {
+    0% {background-color: green;}
+    50% {background-color: purple;}
+    100% {background-color: green;}
+}
+@-moz-keyframes mozBorder {
     0% {border-color: green;}
     50% {border-color: purple;}
     100% {border-color: green;}
@@ -114,14 +124,18 @@ div.red {
 .blinking {
     animation: color 2s;
     animation-iteration-count: infinite;
-    -webkit-animation: color 2s;
+    -webkit-animation: webkitColor 2s;
     -webkit-animation-iteration-count: infinite;
+    -moz-animation: mozColor 2s;
+    -moz-animation-iteration-count: infinite;
 }
 .blinking-border {
     animation: border 2s;
     animation-iteration-count: infinite;
-    -webkit-animation: border 2s;
+    -webkit-animation: webkitBorder 2s;
     -webkit-animation-iteration-count: infinite;
+    -moz-animation: mozBorder 2s;
+    -moz-animation-iteration-count: infinite;
     border: 6px solid yellow;
     width: 144px;
     height: 144px;
@@ -132,8 +146,10 @@ div.red {
 .blinking-section-border {
     animation: border 1s;
     animation-iteration-count: infinite;
-    -webkit-animation: border 1s;
+    -webkit-animation: webkitBorder 1s;
     -webkit-animation-iteration-count: infinite;
+    -moz-animation: mozBorder 1s;
+    -moz-animation-iteration-count: infinite;
     border: 6px solid yellow;
     width: 884px;
     height: auto;
