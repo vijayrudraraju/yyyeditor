@@ -40,8 +40,6 @@
         <button type="button" class="change-file-button" id="change-image-{id}">change image</button>
         <form class="file-form" id="image-form-{id}">
             <input type="file" class="change-file-input" id="change-image-input-{id}" name="_attachments"/>
-            <input type="hidden" name="_rev"/>
-            <input type="hidden" class="hidden-name" name="image"/>
         </form>
         <button type="button" class="save-image-button invisible" id="save-image-{id}">save change</button>
         <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove image</button>
@@ -55,8 +53,6 @@
         <button type="button" class="change-file-button" id="change-image-{id}">change image</button>
         <form class="file-form" id="image-form-{id}">
             <input type="file" class="change-file-input" id="change-image-input-{id}" name="_attachments"/>
-            <input type="hidden" name="_rev"/>
-            <input type="hidden" class="hidden-name" name="image"/>
         </form>
         <button type="button" class="save-image-button invisible" id="save-image-{id}">save change</button>
         <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove image</button>
@@ -76,11 +72,29 @@
         <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove link</button>
 </div>
     {/link}
+    {#video}
+<div class="page-section page-section-{id} video-section">
+    <div>{.|s}</div>
+    <textarea id="edit-video-input-{id}" name="text" rows="20">{.}</textarea>
+    <button type="button" id="save-video-button-{id}" class="save-video-button invisible">save change</button>
+    <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove video</button>
+</div>
+    {/video}
+    {#sound}
+<div class="page-section page-section-{id} sound-section">
+    <div>{.|s}</div>
+    <textarea id="edit-sound-input-{id}" name="text" rows="20">{.}</textarea>
+    <button type="button" id="save-sound-button-{id}" class="save-sound-button invisible">save change</button>
+    <button type="button" class="remove-section-button serious" id="remove-section-button-{id}">remove sound</button>
+</div>
+    {/sound}
 {/sections}
 <div class="page-section red">
     <button type="button" id="add-text-section-button" class="space red">(+)add text</button>
     <button type="button" id="add-image-section-button" class="space red">(+)add image</button>
     <button type="button" id="add-link-section-button" class="space red">(+)add link</button>
+    <button type="button" id="add-video-section-button" class="space red">(+)add video</button>
+    <button type="button" id="add-sound-section-button" class="space red">(+)add sound</button>
 </div>
 
 <div class="page-footer">

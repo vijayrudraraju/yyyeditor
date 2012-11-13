@@ -214,10 +214,10 @@
         $('textarea').live('keyup change', function() {
             var sectionId = parseInt($(this).attr('id').split('-')[3]);
             if ($(this).val() !== _SECTIONS[sectionId+2]) {
-                $(this).parent().find('.save-text-button').addClass('blinking').removeClass('invisible');
+                $(this).parent().find('.save-text-button, .save-video-button, .save-sound-button').addClass('blinking').removeClass('invisible');
                 $(this).parent().addClass('blinking-section-border');
             } else {
-                $(this).parent().find('.save-text-button').removeClass('blinking').addClass('invisible');
+                $(this).parent().find('.save-text-button, .save-video-button, .save-sound-button').removeClass('blinking').addClass('invisible');
                 $(this).parent().removeClass('blinking-section-border');
             }
         });
@@ -237,6 +237,10 @@
             "click #add-text-section-button": "addTextSection",
             "click #add-image-section-button": "addImageSection",
             "click #add-link-section-button": "addLinkSection",
+            "click #add-video-section-button": "addVideoSection",
+            "click #add-sound-section-button": "addSoundSection",
+
+
 
             "click .remove-section-button": "removeSection",
 
@@ -245,6 +249,8 @@
             "click .save-text-button" : "saveTextSection",
             "click .save-image-button" : "saveImageSection",
             "click .save-link-button" : "saveLinkSection",
+            "click .save-video-button" : "saveVideoSection",
+            "click .save-sound-button" : "saveSoundSection"
         },
         initialize: function() {
             // helpful state and identity variables
@@ -297,7 +303,7 @@
                 '</div></a>' + 
                 '<div class="file-input-interface" id="cover-interface-'+model.id+'">' +
                 '<button type="button" class="change-file-button" id="change-cover-'+model.id+'">change cover</button>' +
-                '<form class="file-form" id="cover-form-'+model.id+'"><input type="file" class="change-file-input" id="update-cover-input-'+model.id+'" name="_attachments"/><input id="update-cover-rev-'+model.id+'" type="hidden" name="_rev"/><input class="hidden-name" type="hidden" name="cover_name"/></form>' + 
+                '<form class="file-form" id="cover-form-'+model.id+'"><input type="file" class="change-file-input" id="update-cover-input-'+model.id+'" name="_attachments"/></form>' + 
                 '</div>' +
                 '<button type="button" class="save-cover-button invisible" id="save-cover-'+model.id+'">save change</button>' +
                 '<br/>' +
@@ -340,7 +346,6 @@
                 reader.onload = (function(aImg) { 
                     return function(e) { 
                         aImg.src = e.target.result; 
-                        filePicker.parent().find('.hidden-name').val(file.name);
                         if (type === 'cover') {
                             filePicker.parent().parent().parent().find('.save-cover-button').addClass('blinking').removeClass('invisible');
                             filePicker.parent().parent().parent().find('.link').addClass('blinking-border');
@@ -356,16 +361,6 @@
                 })(filePicker.parent().parent().parent().find('img')[0]);
                 reader.readAsDataURL(file);
             }
-            /*
-            $('#update-'+type+'-preview-'+id).html('');
-            var file = $('#update-'+type+'-input-'+id)[0].files[0];
-            if (file) {
-                $('#update-'+type+'-preview-'+id).html('<p>'+file.name+'</p><img class="thumbnail" id="update-'+type+'-preview-image-'+id+'" alt="image"/>');
-                var reader = new FileReader();
-                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; } })($('#update-'+type+'-preview-image-'+id)[0]);
-                reader.readAsDataURL(file);
-            }
-            */
         },
         addArticle: function() {
             loading();
@@ -483,6 +478,54 @@
 
             this.saveArticle();
         },
+        addVideoSection: function(ev) {
+            loading();
+
+            console.log('addVideoSection', YYYCollection.get(_ID).get('sections'));
+            var sections = YYYCollection.get(_ID).get('sections');
+            if (sections.length) {
+                sections.push({
+                    id: sections[sections.length-1].id+1,
+                    video: '((empty))'
+                });
+            } else {
+                sections.push({
+                    id: 0,
+                    video: '((empty))'
+                });
+            }
+
+            YYYCollection.get(_ID).set({
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
+            });
+
+            this.saveArticle();
+        },
+        addSoundSection: function(ev) {
+            loading();
+
+            console.log('addSoundSection', YYYCollection.get(_ID).get('sections'));
+            var sections = YYYCollection.get(_ID).get('sections');
+            if (sections.length) {
+                sections.push({
+                    id: sections[sections.length-1].id+1,
+                    sound: '((empty))'
+                });
+            } else {
+                sections.push({
+                    id: 0,
+                    sound: '((empty))'
+                });
+            }
+
+            YYYCollection.get(_ID).set({
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
+            });
+
+            this.saveArticle();
+        },
         removeSection: function(ev) {
             loading();
 
@@ -513,9 +556,13 @@
 
             var that = this;
             var id = ev.target.id.split('-')[2];
+            var filePicker = $('#update-cover-input-'+id);
+            var file = filePicker[0].files[0];
+            var name = file.name;
+            var type = file.type;
 
             YYYCollection.get(id).set({
-                cover_name:$('#'+ev.target.id).parent().find('.hidden-name').val(),
+                cover_name:name,
                 unix_modified_time: _DATE.getTime()
             });
 
@@ -523,21 +570,18 @@
                 success: function() { 
                     console.log('cover save success ' + YYYCollection.get(id).id + ' ' + YYYCollection.get(id).cid); 
 
-                    var filePicker = $('#update-cover-input-'+id);
-
-                    var formData = new FormData();
-                    formData.append('_attachments',filePicker[0].files[0]);
-                    formData.append('_rev',YYYCollection.get(id).get('_rev'));
+                    var rev = YYYCollection.get(id).get('_rev');
+                    console.log(name,rev,file);
 
                     $.ajax({
-                        url: '/'+_DBNAME+'/'+id,
-                        type: 'post',
-                        data: formData,
+                        url: '/'+_DBNAME+'/'+id+'/'+name+'?rev='+rev,
+                        type: 'PUT',
+                        data: file,
                         cache: false,
-                        contentType: 'image/jpeg',
+                        contentType: type,
                         processData: false,
                         success: function(data) {
-                            console.log('cover image upload success!');
+                            console.log('cover image upload success!', filePicker);
                             filePicker.parent().parent().parent().find('.save-cover-button').removeClass('blinking').addClass('invisible');
                             filePicker.parent().parent().parent().find('.link').removeClass('blinking-border');
                             filePicker.parent().parent().parent().find('.thumbnail').removeClass('bordered');
@@ -605,19 +649,22 @@
 
             var sectionId = parseInt(ev.target.id.split('-')[2]);
             var sections = YYYCollection.get(_ID).get('sections');
-            console.log('saveImageSection', sectionId, $('#'+ev.target.id).parent().find('.hidden-name').val());
-            console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
+            var filePicker = $('#change-image-input-'+sectionId);
+            var file = filePicker[0].files[0];
+            var name = file.name;
+            var type = file.type;
+
+            console.log('saveImageSection', sectionId, name);
 
             for (var i=0;i<sections.length;i++) {
                 if (parseInt(sections[i].id) === parseInt(sectionId)) {
                     sections[i] = {
                         id: sectionId,
-                       image: $('#'+ev.target.id).parent().find('.hidden-name').val()
+                        image: name
                     };
                 }
             }
             console.log(sections);
-
 
             YYYCollection.get(_ID).set({
                 sections: sections,
@@ -629,20 +676,15 @@
                 success: function() { 
                     console.log('image section save success ' + YYYCollection.get(_ID).id + ' ' + YYYCollection.get(_ID).cid); 
 
-                    $('#image-form-'+sectionId+' :hidden').val(YYYCollection.get(_ID).get('_rev'));
-                    var filePicker = $('#change-image-input-'+sectionId);
-                    var formData = new FormData();
-                    formData.append('_attachments',filePicker[0].files[0]);
-                    formData.append('_rev',YYYCollection.get(id).get('_rev'));
+                    var rev = YYYCollection.get(_ID).get('_rev');
 
-                    $('#image-form-'+sectionId).ajaxSubmit({
-                    //$.ajax({
-                        url: '/'+_DBNAME+'/'+_ID,
-                        type: 'post',
-                        data: formData,
+                    $.ajax({
+                        url: '/'+_DBNAME+'/'+_ID+'/'+name+'?rev='+rev,
+                        type: 'PUT',
+                        data: file,
                         cache: false,
-                        contentType: false,
-                        //processData: false,
+                        contentType: type,
+                        processData: false,
                         success: function(data) {
                             console.log('image section upload success!');
                             console.log(data);
@@ -668,6 +710,56 @@
                         id: sectionId,
                         link: $('#edit-link-input-'+sectionId).val(),
                         display: $('#edit-display-input-'+sectionId).val()
+                    };
+                }
+            }
+            console.log(sections);
+
+            YYYCollection.get(_ID).set({
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
+            });
+
+            this.saveArticle();
+        },
+        saveVideoSection: function(ev) {
+            loading();
+
+            var sectionId = parseInt(ev.target.id.split('-')[3]);
+            var sections = YYYCollection.get(_ID).get('sections');
+            console.log('saveVideoSection', sectionId);
+            console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
+
+            for (var i=0;i<sections.length;i++) {
+                if (parseInt(sections[i].id) === parseInt(sectionId)) {
+                    sections[i] = {
+                        id: sectionId,
+                        video: $('#edit-video-input-'+sectionId).val() 
+                    };
+                }
+            }
+            console.log(sections);
+
+            YYYCollection.get(_ID).set({
+                sections: sections,
+                unix_modified_time: _DATE.getTime()
+            });
+
+            this.saveArticle();
+        },
+        saveSoundSection: function(ev) {
+            loading();
+
+            var sectionId = parseInt(ev.target.id.split('-')[3]);
+            var sections = YYYCollection.get(_ID).get('sections');
+            console.log('saveSoundSection', sectionId);
+            console.log(YYYCollection.get(_ID).get('sections')[sectionId]);
+
+            for (var i=0;i<sections.length;i++) {
+                if (parseInt(sections[i].id) === parseInt(sectionId)) {
+                    sections[i] = {
+                        id: sectionId,
+                        sound: $('#edit-sound-input-'+sectionId).val() 
                     };
                 }
             }

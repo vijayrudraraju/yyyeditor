@@ -16,9 +16,6 @@ button:hover {
 button:active {
     background-color: blue;
 }
-button.space {
-    margin: 10px;
-}
 
 /* interface structure */
 .interface-header {
@@ -174,6 +171,9 @@ textarea {
     margin: 15px;
     color: blue;
 }
+input[type=file] {
+    cursor: default;
+}
 input[type=text] {
     width: 400px;
     color: blue;
@@ -205,6 +205,9 @@ button.serious:hover {
 }
 button.serious:active {
     background-color: white;
+}
+button.space {
+    margin: 14px;
 }
 
 /* tabs */
