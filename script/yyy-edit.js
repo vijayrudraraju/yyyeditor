@@ -6,58 +6,6 @@
         return s;
     }
 
-    /*
-    var errors = {};
-    function success() {
-        console.log("success: ",this.src);
-    }
-    function failure() {
-        console.log("success: ",this.src);
-    }
-
-    // Check the existence of an image file at `url` by creating a
-    // temporary Image element. The `success` callback is called
-    // if the image loads correctly or the image is already complete.
-    // The `failure` callback is called if the image fails to load
-    // or has failed to load in the past.
-    window.checkImage = function (url, success, failure) {
-        var img = new Image(), loaded = false, errored = false;
-        // Run only once, when `loaded` is false. If `success` is a
-        // function, it is called with `img` as the context.
-        img.onload = function () {
-            if (loaded) {
-                return;
-            }
-            loaded = true;
-            if (success && success.call) {
-                success.call(img);
-            }
-        };
-        // Run only once, when `errored` is false. If `failure` is a
-        // function, it is called with `img` as the context.
-        img.onerror = function () {
-            if (errored) {
-                return;
-            }
-            errors[url] = errored = true;
-            if (failure && failure.call) {
-                failure.call(img);
-            }
-        };
-        img.src = url;
-        // If `url` is in the `errors` object, trigger the `onerror`
-        // callback.
-        if (errors[url]) {
-            img.onerror.call(img);
-        }
-        // If the image is already complete (i.e. cached), trigger the
-        // `onload` callback.
-        if (img.complete) {
-            img.onload.call(img);
-        }
-    };
-    */
-
     var _DBNAME = 'yyy';
     var _EDITDOCNAME = 'edit';
     var _MAINDOCNAME = 'one';
@@ -82,6 +30,9 @@
         return b.get('unix_creation_time') - a.get('unix_creation_time');
     };
 
+
+    var interfaceArray = ['#nav-interface', '#preview-interface', '#settings-interface', '#loading-interface'],
+        interfaceToggle = generateToggler(interfaceArray);
     function generateToggler(array) {
         return function(showIndex) {
             for (var i=0;i<array.length;i++) {
@@ -91,21 +42,26 @@
                     $(array[i]).hide();
                 }
             }
-        };
+        }
     }
-
-    var interfaceArray = ['#nav-interface', '#preview-interface', '#create-interface', '#loading-interface'];
-    var interfaceToggle = generateToggler(interfaceArray);
     function loading() {
         _SNEAKY.sneak();
         interfaceToggle(3);
     }
-    function loadedNav() {
-        interfaceToggle(0);
-        _SNEAKY.scroll();
-    }
-    function loadedPreview() {
-        interfaceToggle(1);
+    function loaded(str) {
+        if (str === undefined) {
+            str = 'nav';
+        }
+        switch (str) {
+            case 'nav':
+                interfaceToggle(0);
+                break;
+            case 'preview':
+                interfaceToggle(1);
+                break;
+            case 'settings':
+                interfaceToggle(2);
+        }
         _SNEAKY.scroll();
     }
     function loadPage() {
@@ -127,7 +83,13 @@
             });
             console.log('_SECTIONS',_SECTIONS);
 
-            loadedPreview();
+            loaded('preview');
+        });
+    }
+    function loadSettings() {
+        $.get('/'+_DBNAME+'/_design/'+_EDITDOCNAME+'/_show/'+'settings/', function(data) {
+            $('#settings-interface').html(data);
+            loaded('settings');
         });
     }
 
@@ -138,6 +100,9 @@
         } else if (newHash === '/home') {
             loading();
             window.AllView.refresh();
+        } else if (newHash === '/settings') {
+            console.log('settings');
+            loadSettings();
         } else if (newHash.indexOf('/modify') !== -1) {
             var id = newHash.indexOf('/',1);
             _ID = newHash.slice(id+1);
@@ -227,6 +192,8 @@
             "click #home-btn" : "goHome",
 
             "click #new-btn" : "addArticle",
+            'click #edit-font-btn' : 'editFonts',
+
             "click .edit-button" : "editArticle",
             "change .change-file-input": "refreshCover",
             "click .save-cover-button" : "saveCover",
@@ -239,10 +206,9 @@
             "click #add-video-section-button": "addVideoSection",
             "click #add-sound-section-button": "addSoundSection",
 
-
-
             "click .remove-section-button": "removeSection",
 
+            "click #new-checkbox": "saveNewCheck",
             "click #save-title-button": "saveTitle",
             "click #save-author-button": "saveAuthor",
             "click .save-text-button" : "saveTextSection",
@@ -269,7 +235,7 @@
         refresh: function() {
             window.YYYCollection.fetch({
                 success: function() { 
-                    loadedNav();
+                    loaded('nav');
                     console.log('refresh fetch success');
                 }
             });
@@ -292,7 +258,13 @@
             } else {
                 var linkText = 'http://www.yesyesyesmag.com/_show/article/'+model.id;
             }
-            var str = 
+            var str = ''; 
+            if (model.get('is_new')) {
+                str +=
+                    '<div style="float:left;background:yellow;">' +
+                    '<p style="position:relative;top:0px;margin:0;height:0px;text-align:center;font-family:\'Pontano Sans\';">NEW!!!</p>';
+            }
+            str += 
                 '<li class="cell">' +
                 '<a class="link" href="'+linkText+'" target="_blank">' + 
                 '<img class="thumbnail" src="/'+_DBNAME+'/'+model.id+'/'+model.get('cover_name')+'"/>' +
@@ -309,6 +281,9 @@
                 '<button type="button" class="edit-button red" id="edit-'+model.id+'">edit article</button>' +
                 '<button type="button" class="remove-button serious" id="remove-'+model.id+'">(-)remove</button>' +
                 '</li>';
+            if (model.get('is_new')) {
+                str += '</div>';
+            }
             $('#nav-grid').append(str).find('.label').css('visibility','hidden');
         },
         viewOne: function(ev) {
@@ -360,6 +335,12 @@
                 })(filePicker.parent().parent().parent().find('img')[0]);
                 reader.readAsDataURL(file);
             }
+        },
+        editFonts: function() {
+            loading();
+            console.log('trigger editFonts');
+
+            $.hash.go('/settings');
         },
         addArticle: function() {
             loading();
@@ -604,6 +585,19 @@
                     });
                 } 
             });
+        },
+        saveNewCheck: function(ev) {
+            loading();
+
+            console.log('saveNewCheck',window.location.hash);
+
+            var date = new Date();
+            YYYCollection.get(_ID).set({
+                is_new: $('#new-checkbox').is(':checked'),
+                unix_modified_time: date.getTime()
+            });
+
+            this.saveArticle();
         },
         saveTitle: function(ev) {
             loading();

@@ -53,6 +53,7 @@ button:active {
 }
 .box {
     width: 880px;
+    padding: 8px;
     border: 2px solid blue;
 }
 .page-section {

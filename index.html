@@ -7,6 +7,7 @@
         <meta name="programmer" content="yesyesyes">
 
         <link href='http://fonts.googleapis.com/css?family=Karla|Pontano+Sans|Goudy+Bookletter+1911' rel='stylesheet' type='text/css'/>
+        <link href='http://fonts.googleapis.com/css?family=Libre+Baskerville|Ledger' rel='stylesheet' type='text/css'>
 
         <link rel="stylesheet" type="text/css" href="/yyy/_design/one/style/yyy-page.css"/>
         <link rel="stylesheet" type="text/css" href="style/yyy-edit.css"/>
@@ -43,6 +44,12 @@
                 <div id="preview-interface" class="interface">
                 </div>
 
+                <div id='settings-interface' class='interface'>
+                    <select id='header-font'>
+                        <option></option>
+                    </select>
+                </div>
+
                 <!-- view all articles -->
                 <div id="nav-interface" class="interface">
                     <div id="nav-header" class="interface-header">
@@ -55,6 +62,7 @@
                         <div id="nav-articles-grid" class="subsection">
 
                             <button type="button" id="new-btn" class="red">(+)add article</button>
+                            <button type="button" id="edit-font-btn" class="red">edit fonts</button>
                             <div id="nav-grid" class="grid">
                             </div>
 
